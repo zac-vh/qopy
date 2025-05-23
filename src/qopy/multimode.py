@@ -25,3 +25,30 @@ def wig2m_h(W, rl):
     Wlog = np.zeros([nr, nr, nr, nr])
     Wlog[np.nonzero(W)] = np.log(np.abs(W[np.nonzero(W)]))
     return - wig2m_int(W * Wlog, rl)
+
+
+
+def trace_2m(rho):
+    # Compute the trace of a 2m state
+    # Convention is |i,j><k,l|
+    ni = np.shape(rho)[0]
+    nj = np.shape(rho)[1]
+    tr = 0
+    for i in range(ni):
+        for j in range(nj):
+            tr += rho[i][j][i][j]
+    return tr
+
+
+def rho_trim(rho, tol=0):
+    n = len(rho)
+    iszero = True
+    for i in range(n - 1):
+        iszero = (iszero and (np.abs(rho[n - 1][i])) <= tol)
+        iszero = (iszero and (np.abs(rho[i][n - 1])) <= tol)
+    iszero = (iszero and (np.abs(rho[n - 1][n - 1])) <= tol)
+    if iszero:
+        rho = rho[:n - 1, :n - 1]
+        if len(rho) > 1:
+            rho = rho_trim(rho, tol)
+    return rho

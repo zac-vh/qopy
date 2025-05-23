@@ -7,7 +7,8 @@ F(W) -> W
 import numpy as np
 import math
 import scipy
-from qopy import phase_space.analysis.wig_int
+
+#from qopy.phase_space import wig_int
 
 def wig_trunc(w, rl):
     # Makes W a non-negative distribution by averaging the negative parts of W with the lowest positive parts

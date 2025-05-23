@@ -67,3 +67,37 @@ def wig_rear(w, rear='dec'):
     ind = np.unravel_index(np.argsort(m, axis=None), m.shape)
     wr[ind] = wd
     return wr
+
+
+def vec_major(v1, v2, tol=0):
+    len1 = len(v1)
+    len2 = len(v2)
+    if len1 > len2:
+        v2 = np.append(v2, np.zeros(len1 - len2))
+    elif len2 > len1:
+        v1 = np.append(v1, np.zeros(len2 - len1))
+    v1d = np.sort(v1)[::-1]
+    v2d = np.sort(v2)[::-1]
+    v1dc = np.cumsum(v1d)
+    v2dc = np.cumsum(v2d)
+    diff = np.min(v1dc - v2dc)
+    maj = False
+    if diff >= -tol:
+        maj = True
+    return maj
+
+
+def vec_dec(v, n=0):
+    lenv = len(v)
+    if n < 0:
+        return
+    if n == 0:
+        return np.sort(v)[::-1]
+    if n >= (lenv - 1):
+        return v
+    v_hart = v[:n]
+    v_end = v[n:]
+    v_end_dec = np.sort(v_end)[::-1]
+    v_dec = np.append(v_hart, v_end_dec)
+    return v_dec
+

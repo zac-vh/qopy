@@ -1,3 +1,10 @@
+'''
+
+Contains all the operation creating Ket vectors, or acting on ket vectors
+
+'''
+
+
 import numpy as np
 import math
 
@@ -26,9 +33,6 @@ def ket_rotate(ket, phi):
     return ket
 
 
-
-
-
 def ket_disp(ket, d):
     # d = sqrt(2)*alpha
     if not (isinstance(d, list) or (isinstance(d, np.ndarray))):
@@ -42,3 +46,20 @@ def ket_disp(ket, d):
             km = km+ket[n]*disp_mat(m, n, alpha)
         dispket[m] = km
     return dispket
+
+
+def ket_norm(ket, phased=True, length=None):
+    # Return a normalized ket
+    if type(ket) is not np.array:
+        ket = np.array(ket, dtype=complex)
+    ket = ket.astype(complex) / np.sqrt(np.sum(np.abs(ket) ** 2))
+    if phased:
+        nonz = 0
+        while ket[nonz] == 0:
+            nonz = nonz+1
+        th = np.angle(ket[nonz])
+        ket = np.exp(-1j*th)*ket
+        ket[nonz] = np.real(ket[nonz])
+    if length is not None:
+        ket = np.concatenate([ket, np.zeros(length-len(ket))])
+    return ket

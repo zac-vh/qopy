@@ -203,3 +203,63 @@ def wig_fx(fx, rl, nr):
     # Wigner function of the wave-function fx
     # fx should be sampled on xl (see get_xl)
     return np.real(wij_fx(fx, fx, rl, nr))
+
+
+def rho_to_wig(rho, rl, nr, isherm=True):
+    # Build the Wigner function of the density matrix rho (in wij_set basis)
+    n = len(rho)
+    w = np.zeros([nr, nr])
+    if isherm:
+        for i in range(n):
+            rii = rho[i][i]
+            if rii != 0:
+                w = w + rii * wij_fock(i, i, rl, nr)
+            for j in range(i+1, n):
+                rij = rho[i][j]
+                if rij != 0:
+                    rho_wij = rho[i][j] * wij_fock(i, j, rl, nr)
+                    w = w + rho_wij + np.conj(rho_wij)
+        w = np.real(w)
+    else:
+        for i in range(n):
+            for j in range(n):
+                rij = rho[i][j]
+                if rij != 0:
+                    w = w + rho[i][j] * wij_fock(i, j, rl, nr)
+    return w
+
+
+def rho_to_wig_wijset(rho, wijset, isherm=True):
+    # Build the Wigner function of the density matrix rho (in wij_set basis)
+    n = len(rho)
+    #nr = np.shape(wijset)[2]
+    w = np.zeros(wijset.shape[2:4])
+    if isherm:
+        for i in range(n):
+            w = w + rho[i][i] * wijset[i][i]
+            for j in range(i+1, n):
+                rho_wij = rho[i][j] * wijset[i][j]
+                w = w + 2*np.real(rho_wij)
+        w = np.real(w)
+    else:
+        for i in range(n):
+            for j in range(n):
+                w = w + rho[i][j] * wijset[i][j]
+    return w
+
+
+def mix_to_wig(mix, rl, nr):
+    n = len(mix)
+    w = np.zeros([nr, nr])
+    for i in range(n):
+        w = w + mix[i]*wig_fock(i, rl, nr)
+    return w
+
+
+def mix_to_wig_wijset(mix, wij_set):
+    n = len(mix)
+    nr = np.shape(wij_set)[2]
+    w = np.zeros([nr, nr])
+    for i in range(n):
+        w = w + mix[i]*wij_set[i][i]
+    return w

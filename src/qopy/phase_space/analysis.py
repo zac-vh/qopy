@@ -124,9 +124,6 @@ def wig_fishmat(w, rl):
     return j
 
 
-
-
-
 def wig_radon(w, rl, ntheta=None):
     nr = len(w)
     if ntheta is None:
@@ -137,3 +134,14 @@ def wig_radon(w, rl, ntheta=None):
     wr = skimage.transform.radon(w, np.linspace(0, 360, ntheta, endpoint=False), circle=True)
     wr = wr*(rl/(nr-1))
     return wr
+
+
+def wig_to_rho(wijset, w, rl):
+    # Build the density matrix rho from a Wigner function (in wij_set basis)
+    n = np.shape(wijset)[0]
+    rho = np.zeros([n, n], dtype=complex)
+    for i in range(n):
+        for j in range(n):
+            wji = wijset[j][i]
+            rho[i][j] = 2*math.pi * wig_int(w * wji, rl)
+    return rho
