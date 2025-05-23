@@ -60,6 +60,7 @@ def get_xl(rl, nr):
     xl = np.linspace(-rl / 2 - drl, rl / 2 + drl, 2 * nr) + dx
     return xl
 
+
 def rx_h(rx, rl):
     # Compute the Shannon entropy (or Rényi entropy) of the density function rx
     nr = len(rx)

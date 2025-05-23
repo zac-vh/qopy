@@ -8,8 +8,8 @@ Contains all the functions creating density operators, or acting on density oper
 
 import numpy as np
 import math
-
-
+import scipy
+import random
 
 
 
@@ -18,31 +18,6 @@ def rho_rotate(rho, phi):
     rotmat = np.diag(np.exp(-1j*phi*np.arange(N)))
     rhorot = rotmat @ rho @ np.conj(rotmat)
     return rhorot
-
-
-
-
-
-def rho_covmat(rho, mean=None):
-    n = len(rho)
-    if mean is None:
-        [xm, pm] = rho_mean(rho)
-    elif not (isinstance(mean, list) or (isinstance(mean, np.ndarray)) or (isinstance(mean, tuple))):
-        xm = np.sqrt(2)*np.real(mean)
-        pm = np.sqrt(2)*np.imag(mean)
-    else:
-        xm = mean[0]
-        pm = mean[1]
-
-    nm = rho_s(rho, 'photons')
-    aa = 0+0j
-    for i in range(n-2):
-        aa = aa + rho[i, i+2]*np.sqrt((i+1)*(i+2))
-    xxm = np.real(aa)+nm+1/2-xm**2
-    ppm = -np.real(aa)+nm+1/2-pm**2
-    xpm = -np.imag(aa)-xm*pm
-    cov = np.array([[xxm, xpm], [xpm, ppm]])
-    return cov
 
 
 def ket_to_rho(ket):
@@ -62,59 +37,66 @@ def ket_to_rho(ket):
     return rho
 
 
-def rho_s(rho, a=1):
-    # Compute the Von Neumann entropy (or Rényi entropy) of rho
-    # Eigenvalues of rho are assumed positive
-    la = np.real(np.linalg.eig(rho)[0])
-    la = np.delete(la, np.where(la <= 0))
-    if a == 'purity':
-        return np.sum(la**2)
-    if a == 'photons':
-        d = np.diag(range(len(rho)))
-        return np.real(np.trace(d @ rho))
-    if a == 'energy':
-        d = np.diag(range(len(rho)))
-        return np.real(np.trace(d@rho))+1/2
-    if a == 0:
-        return np.log(np.sum(np.abs(la) != 0))
-    if a == 1:
-        return -np.sum(la * np.log(la))
-    if a == 'inf' or np.isinf(a):
-        return - np.log(np.max(np.abs(la)))
-    return (1 / (1 - a)) * np.log(np.sum(la ** a))
-
-
-def rho_eig(rho):
-    eigval = np.real(np.linalg.eig(rho)[0])
-    eigvec = np.transpose(np.linalg.eig(rho)[1])
-    eigvec_sort = [vec for _, vec in sorted(zip(eigval, eigvec), key=operator.itemgetter(0))][::-1]
-    eigval_sort = np.sort(eigval)[::-1]
-    return np.array([eigval_sort, eigvec_sort], dtype=object)
-
-
-def rho_eigval(rho):
-    return rho_eig(rho)[0]
-
-
-def rho_eigvec(rho):
-    return rho_eig(rho)[1]
-
-
-def vec_s(vec, a=1):
-    # Compute the Von Neumann entropy (or Rényi entropy) of a vector
-    vec = vec.astype(float)
-    vec = np.delete(vec, np.where(vec == 0))
-    if a == 0:
-        return np.log(np.sum(np.abs(vec) != 0))
-    if a == 1:
-        return -np.sum(vec * np.log(np.abs(vec)))
-    if a == 'inf' or np.isinf(a):
-        return - np.log(np.max(np.abs(vec)))
-    return (1 / (1 - a)) * np.log(np.sum(vec ** a))
-
 
 def rho_phase(rho, phi):
     n = len(rho)
     nlist = np.arange(0, n)
     uphi = np.diag(np.exp(-1j*phi*nlist))
     return uphi @ rho @ np.conj(np.transpose(uphi))
+
+
+def rho_trim(rho, tol=0):
+    n = len(rho)
+    iszero = True
+    for i in range(n - 1):
+        iszero = (iszero and (np.abs(rho[n - 1][i])) <= tol)
+        iszero = (iszero and (np.abs(rho[i][n - 1])) <= tol)
+    iszero = (iszero and (np.abs(rho[n - 1][n - 1])) <= tol)
+    if iszero:
+        rho = rho[:n - 1, :n - 1]
+        if len(rho) > 1:
+            rho = rho_trim(rho, tol)
+    return rho
+
+
+def rand_ket(n, form='rho'):
+    if n == 1:
+        if form == 'rho':
+            return np.array([[1]])
+        return np.array([np.exp(1j*random.random()*2*math.pi)])
+    ket = rand_u(n)[0]
+    if form == 'rho':
+        return ket_to_rho(ket)
+    return ket
+
+
+def rand_rho(n):
+    if n == 1:
+        return np.ones([1, 1])
+    u_rand1 = scipy.stats.unitary_group.rvs(n)
+    u_rand2 = scipy.stats.unitary_group.rvs(n)
+    rho_diag = np.diag(np.abs(u_rand1[0])**2)
+    rho = u_rand2 @ rho_diag @ np.transpose(np.conj(u_rand2))
+    return rho
+
+
+def rand_u(n):
+    if n == 1:
+        return np.array([np.exp(1j*random.random()*2*math.pi)])
+    return scipy.stats.unitary_group.rvs(n)
+
+
+def disp_mat(m, n, alpha):
+    # return the value of <m|D(alpha)|n>
+    dmn = 0
+    for p in range(np.min([m, n])+1):
+        dmn = dmn + np.sqrt(float(math.factorial(m)*math.factorial(n)))*(-1)**(n-p)/(math.factorial(p)*math.factorial(m-p)*math.factorial(n-p))*alpha**(m-p)*np.conj(alpha)**(n-p)
+    dmn = np.exp(-(1/2)*np.abs(alpha)**2)*dmn
+    return dmn
+
+
+def rho_bloch(theta, phi=0, p=1):
+    ket = np.array([np.cos(theta/2), np.exp(1j*phi)*np.sin(theta/2)])
+    rho_pure = ket_to_rho(ket)
+    rho_mix = p*rho_pure+(1-p)*np.eye(2)/2
+    return rho_mix

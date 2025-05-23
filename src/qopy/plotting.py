@@ -60,7 +60,3 @@ def plotr(rho):
         ploti = ax.matshow(np.abs(rho[i]))
         plt.colorbar(ploti, ax=ax)
     plt.show()
-
-
-def printk(ket):
-    print(list(ket))

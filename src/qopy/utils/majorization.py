@@ -101,3 +101,34 @@ def vec_dec(v, n=0):
     v_dec = np.append(v_hart, v_end_dec)
     return v_dec
 
+
+def levels_diff(w, interval, rl):
+    nr = len(w)
+    n = len(interval)
+    dxdp = (rl/(nr-1))**2
+    flev = np.zeros(n)
+    for i in range(n-1):
+        wi = (w >= interval[i])*(w < interval[i+1])
+        flev[i] = wig_int(wi, rl)*dxdp
+    flev[-1] = wig_int(wi >= interval[-1], rl)*dxdp
+    return flev
+
+def levels_greater(w, interval, rl):
+    nr = len(w)
+    n = len(interval)
+    dxdp = (rl / (nr - 1)) ** 2
+    flev = np.zeros(n)
+    for i in range(n):
+        wi = (w >= interval[i])
+        flev[i] = wig_int(wi, rl) * dxdp
+    return flev
+
+def levels_less(w, interval, rl):
+    nr = len(w)
+    n = len(interval)
+    dxdp = (rl / (nr - 1)) ** 2
+    flev = np.zeros(n)
+    for i in range(n):
+        wi = (w <= interval[i])
+        flev[i] = wig_int(wi, rl) * dxdp
+    return flev

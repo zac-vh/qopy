@@ -1,11 +1,6 @@
-
-def disp_mat(m, n, alpha):
-    # return the value of <m|D(alpha)|n>
-    dmn = 0
-    for p in range(np.min([m, n])+1):
-        dmn = dmn + np.sqrt(float(math.factorial(m)*math.factorial(n)))*(-1)**(n-p)/(math.factorial(p)*math.factorial(m-p)*math.factorial(n-p))*alpha**(m-p)*np.conj(alpha)**(n-p)
-    dmn = np.exp(-(1/2)*np.abs(alpha)**2)*dmn
-    return dmn
+import numpy as np
+import scipy
+import math
 
 
 def bs_ikn(i, k, n, eta=0.5):
