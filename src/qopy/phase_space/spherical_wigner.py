@@ -1,40 +1,40 @@
 import numpy as np
-
+import scipy
+import math
+from qutip import clebsch
+import matplotlib.pyplot as plt
+from qopy.utils.grid import grid_sphere as grid
 
 # Spherical Wigner functions for qudits
-def spharm_thetaphi(l, m, theta, phi):
+def spherical_harmonic_theta_phi(l, m, theta, phi):
     return scipy.special.sph_harm(m, l, phi, theta, out=None)
 
 
-def spharm(l, m, n_theta, n_phi=None):
+def sperical_harmonic(l, m, n_theta, n_phi=None):
     if n_phi is None:
         n_phi = 2*n_theta
-    th = np.linspace(0, math.pi, n_theta)
-    ph = np.linspace(0, 2*math.pi, n_phi)
-    mth, mph = np.meshgrid(th, ph, indexing='ij')
-    return spharm_thetaphi(l, m, mth, mph)
+    mth, mph = grid(n_theta, n_phi)
+    return spherical_harmonic_theta_phi(l, m, mth, mph)
 
 
-def swig_dicke(j, m, n_theta, n_phi=None):
-    sw = swij_dicke(j, m, m, n_theta, n_phi)
+def dicke_spherical_wigner(j, m, n_theta, n_phi=None):
+    sw = dicke_spherical_cross_wigner(j, m, m, n_theta, n_phi)
     return np.real(sw)
 
 
-def swij_dicke(j, ma, mb, n_theta, n_phi=None):
+def dicke_spherical_cross_wigner(j, ma, mb, n_theta, n_phi=None):
     if n_phi is None:
         n_phi = 2*n_theta
-    th = np.linspace(0, math.pi, n_theta)
-    ph = np.linspace(0, 2*math.pi, n_phi)
-    mth, mph = np.meshgrid(th, ph, indexing='ij')
+    mth, mph = grid(n_theta, n_phi)
     sw = np.zeros([n_theta, n_phi])
     for l in np.arange(0, 2*j+1):
         for m in np.arange(-l, l+1):
-            sw = sw + np.sqrt((2*l+1)/(2*j+1))*clebsch(j, l, j, ma, m, mb)*spharm_thetaphi(l, m, mth, mph)
+            sw = sw + np.sqrt((2*l+1)/(2*j+1))*clebsch(j, l, j, ma, m, mb)*spherical_harmonic_theta_phi(l, m, mth, mph)
     sw = np.sqrt((4*math.pi)/(2*j+1))*sw
     return sw
 
 
-def plotsw2d(sw):
+def plot_spherical_wigner_2d(sw):
     if len(np.shape(sw)) == 2:
         sw = [sw]
     N = np.shape(sw)[0]
@@ -49,7 +49,7 @@ def plotsw2d(sw):
         plt.colorbar(im, ax=axs[i])
     plt.show()
 
-def swig_int(sw, j=1/2):
+def integrate_spherical_wigner(sw, j=1/2):
     n_theta = sw.shape[0]
     n_phi = sw.shape[1]
     x_theta = np.linspace(0, math.pi, n_theta)
@@ -60,13 +60,13 @@ def swig_int(sw, j=1/2):
 
 def plotsw(sw, view='2D'):
     if view == '2D' or view == '2d':
-        plotsw2d(sw)
+        plot_spherical_wigner_2d(sw)
     else:
-        plotsw3d(sw)
+        plot_spherical_wigner_3d(sw)
     return
 
 
-def plotsw3d(sw):
+def plot_spherical_wigner_3d(sw):
     if len(np.shape(sw)) == 2:
         sw = [sw]
     N = np.shape(sw)[0]
@@ -96,7 +96,7 @@ def plotsw3d(sw):
     return
 
 
-def swig_marg(sw, angle='theta'):
+def marginal_spherical(sw, angle='theta'):
     n_theta = sw.shape[0]
     n_phi = sw.shape[1]
     x_theta, x_phi = np.linspace(0, math.pi, n_theta), np.linspace(0, 2 * math.pi, n_phi)
@@ -113,17 +113,17 @@ def swig_marg(sw, angle='theta'):
         return [marg_theta, marg_phi]
 
 
-def swijset_dicke(j, n_theta, n_phi=None):
+def dicke_spherical_crosss_wigner_set(j, n_theta, n_phi=None):
     if n_phi is None:
         n_phi = 2*n_theta
     swijset = np.zeros([round(2*j+1), round(2*j+1), n_theta, n_phi], dtype=complex)
     mlist = np.arange(-j, j+1)
     for a in range(round(2*j+1)):
         ma = mlist[a]
-        swijset[a, a] = swig_dicke(j, ma, n_theta, n_phi)
+        swijset[a, a] = dicke_spherical_wigner(j, ma, n_theta, n_phi)
         for b in range(a+1, round(2*j+1)):
             mb = mlist[b]
-            swij = swij_dicke(j, ma, mb, n_theta, n_phi)
+            swij = dicke_spherical_cross_wigner(j, ma, mb, n_theta, n_phi)
             swijset[a, b] = swij
             swijset[b, a] = np.conj(swij)
     return swijset

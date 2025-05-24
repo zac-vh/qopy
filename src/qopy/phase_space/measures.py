@@ -59,6 +59,14 @@ def integrate(w, rl):
     return scipy.integrate.simpson(scipy.integrate.simpson(w, x=x), x=x)
 
 
+def negative_volume(w, rl):
+    nr = len(w)
+    x = np.linspace(-rl/2, rl/2, nr)
+    wneg = np.zeros([nr, nr])
+    wneg[w < 0] = w[w < 0]
+    return integrate(-wneg, rl)
+
+
 def shannon_entropy(w, rl):
     # Compute the Wigner(Rényi) entropy of the Wigner function
     nr = len(w)

@@ -1,11 +1,11 @@
 import numpy as np
 import math
+from qopy.utils.grid import grid_square as grid
 
 
 def fock_cross_husimi(i, j, rl, nr, hbar=1):
     #choose hbar=1/2 to have q0=w0
-    x = np.linspace(-rl/2, rl/2, nr)
-    mx, mp = np.meshgrid(x, x, indexing='ij')
+    mx, mp = grid(rl, nr)
     ma = (mx+1j*mp)/np.sqrt(2*hbar)
     fact = 2*hbar*math.pi
     hij = np.exp(-np.abs(ma)**2)*np.conj(ma)**i*ma**j/np.sqrt(float(math.factorial(i)*math.factorial(j)))

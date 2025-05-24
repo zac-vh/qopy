@@ -10,7 +10,7 @@ def psi_fock(n, x):
         / (math.pi ** (1 / 4) * 2 ** (n / 2) * math.sqrt(math.factorial(n)))
     return f
 
-def psi_fock_sup(ket, x):
+def psi_fock_superposition(ket, x):
     # Wave-function of ket (superposition of Fock ket-vectors)
     n = len(ket)
     fx = np.zeros(np.shape(x), dtype=complex)
@@ -28,7 +28,7 @@ def psi_bump(xl, dr=1, pwr=1):
     return fx/np.sqrt(norm)
 
 
-def psi_gauss(x, alpha=0, r=0, phi=0):
+def psi_gauss(x, alpha=0, rsq=0, phi=0):
     # Wave-function of a squeezed coherent state
     # Squeezing is performed with an angle of phi with respect to x-axis, then displaced
     # If alpha is a a tuple: alpha = (Re[alpha]+iIm[alpha])/sqrt(2)
@@ -40,18 +40,23 @@ def psi_gauss(x, alpha=0, r=0, phi=0):
     x0 = d[0]
     p0 = d[1]
 
-    sigmax2 = np.exp(2 * r) * np.sin(phi) ** 2 + np.exp(-2 * r) * np.cos(phi) ** 2
+    sigmax2 = np.exp(2 * rsq) * np.sin(phi) ** 2 + np.exp(-2 * rsq) * np.cos(phi) ** 2
     fx = (math.pi * sigmax2) ** (-1/4) \
          * np.exp(-((x - x0) ** 2 / 2)
-                  * (np.cosh(r) + np.exp(2 * 1j * phi) * np.sinh(r))
-                  / (np.cosh(r) - np.exp(2 * 1j * phi) * np.sinh(r))) \
+                  * (np.cosh(rsq) + np.exp(2 * 1j * phi) * np.sinh(rsq))
+                  / (np.cosh(rsq) - np.exp(2 * 1j * phi) * np.sinh(rsq))) \
          * np.exp(1j * p0 * x) * np.exp(-1j*x0*p0/2)
     return fx
 
 
-def psi_norm(fx, x):
-    fint = scipy.integrate.simpson(np.abs(fx)**2, x=x)
-    return fx/np.sqrt(fint)
+def psi_integrate(psi, xl):
+    return scipy.integrate.simpson(psi, x=xl)
+
+
+def psi_norm(psi, xl):
+    norm = psi_integrate(np.abs(psi)**2, xl)
+    return psi/np.sqrt(norm)
+
 
 def get_xl(rl, nr):
     # Return the interval over which fx should be sampled to compute its Wigner function
@@ -93,5 +98,9 @@ def fx_four(fx, xl):
         im = scipy.integrate.simpson(np.imag(fx*np.exp(-1j*pi*xl)), x=xl)/np.sqrt(2*math.pi)
         phi[i] = re + im * 1j
     return phi
+
+
+def cubic_phase(gamma, x):
+    return np.exp(1j*gamma*x**3)
 
 

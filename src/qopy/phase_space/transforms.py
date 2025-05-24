@@ -7,34 +7,7 @@ F(W) -> W
 import numpy as np
 import math
 import scipy
-
-#from qopy.phase_space.measures import wig_int
-from qopy import phase_space
-
-def truncate(w, rl):
-    # Makes W a non-negative distribution by averaging the negative parts of W with the lowest positive parts
-    nr = len(w)
-    dxdp = (rl / (nr - 1)) ** 2
-    vneg = -phase_space.measures.integrate(w * (w < 0), rl)
-    wpos = w * (w > 0)
-    min_val = np.sort(np.reshape(wpos, nr ** 2))
-    min_val = np.unique(min_val[min_val != 0])
-    for i in range(len(min_val)):
-        min_ind = np.where(wpos == min_val[i])
-        shape = np.shape(min_ind)
-        for j in range(shape[1]):
-            jx = min_ind[0][j]
-            jp = min_ind[1][j]
-            if vneg >= w[jx][jp] * dxdp:
-                vneg = vneg - wpos[jx][jp] * dxdp
-                wpos[jx][jp] = 0
-            else:
-                vneg = 0
-                wpos[jx][jp] = wpos[jx][jp] - vneg / dxdp
-                break
-        if vneg == 0:
-            break
-    return wpos
+from qopy.phase_space import measures
 
 
 def get_rl_fft(nr):
@@ -139,16 +112,16 @@ def displace(w, d, rl, k=5):
     return ws
 
 
-def symplectic_minimize(w, rl):
+def minimize_energy_with_symplectic(w, rl):
     # Applies the symplectic unitary that minimizes the energy of w
-    w = displace(w, -phase_space.measures.mean(w, rl), rl)
-    cov = phase_space.measures.covariance_matrix(w, rl)
+    w = displace(w, -measures.mean(w, rl), rl)
+    cov = measures.covariance_matrix(w, rl)
     eigvals, eigvecs = np.linalg.eig(cov)
     theta = np.arccos(eigvecs[0][0])
     if eigvecs[1][0] < 0:
         theta = math.pi - theta
     w = rotate(w, -theta)
-    cov = phase_space.measure.covariance_matrix(w, rl)
+    cov = measures.covariance_matrix(w, rl)
     sq = (cov[0, 0]/cov[1, 1])**(1/4)
     w = squeeze(w, sq)
     return w
@@ -173,3 +146,29 @@ def laplacian(w, rl, power=1):
     gwpp = gradient(gwp, rl)[1]
     wout = gwxx + gwpp
     return laplacian(wout, rl, power-1)
+
+
+def average_negative_volume(w, rl):
+    # Makes W a non-negative distribution by averaging the negative parts of W with the lowest positive parts
+    nr = len(w)
+    dxdp = (rl / (nr - 1)) ** 2
+    vneg = -measures.integrate(w * (w < 0), rl)
+    wpos = w * (w > 0)
+    min_val = np.sort(np.reshape(wpos, nr ** 2))
+    min_val = np.unique(min_val[min_val != 0])
+    for i in range(len(min_val)):
+        min_ind = np.where(wpos == min_val[i])
+        shape = np.shape(min_ind)
+        for j in range(shape[1]):
+            jx = min_ind[0][j]
+            jp = min_ind[1][j]
+            if vneg >= w[jx][jp] * dxdp:
+                vneg = vneg - wpos[jx][jp] * dxdp
+                wpos[jx][jp] = 0
+            else:
+                vneg = 0
+                wpos[jx][jp] = wpos[jx][jp] - vneg / dxdp
+                break
+        if vneg == 0:
+            break
+    return wpos

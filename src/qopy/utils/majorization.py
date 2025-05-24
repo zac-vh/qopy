@@ -33,7 +33,7 @@ def wig_major(w1, w2, rl=None, tol=0):
     return maj
 
 
-def major(p, q, tol=0):
+def vector_majorization(p, q, tol=0):
     # Check whether p majorizes q
     # tol is a tolerance value
     lp = len(p)
@@ -69,40 +69,7 @@ def wig_rear(w, rear='dec'):
     return wr
 
 
-def vec_major(v1, v2, tol=0):
-    len1 = len(v1)
-    len2 = len(v2)
-    if len1 > len2:
-        v2 = np.append(v2, np.zeros(len1 - len2))
-    elif len2 > len1:
-        v1 = np.append(v1, np.zeros(len2 - len1))
-    v1d = np.sort(v1)[::-1]
-    v2d = np.sort(v2)[::-1]
-    v1dc = np.cumsum(v1d)
-    v2dc = np.cumsum(v2d)
-    diff = np.min(v1dc - v2dc)
-    maj = False
-    if diff >= -tol:
-        maj = True
-    return maj
-
-
-def vec_dec(v, n=0):
-    lenv = len(v)
-    if n < 0:
-        return
-    if n == 0:
-        return np.sort(v)[::-1]
-    if n >= (lenv - 1):
-        return v
-    v_hart = v[:n]
-    v_end = v[n:]
-    v_end_dec = np.sort(v_end)[::-1]
-    v_dec = np.append(v_hart, v_end_dec)
-    return v_dec
-
-
-def levels_diff(w, interval, rl):
+def level_function_differential(w, interval, rl):
     nr = len(w)
     n = len(interval)
     dxdp = (rl/(nr-1))**2
@@ -113,7 +80,7 @@ def levels_diff(w, interval, rl):
     flev[-1] = wig_int(wi >= interval[-1], rl)*dxdp
     return flev
 
-def levels_greater(w, interval, rl):
+def level_function_greater(w, interval, rl):
     nr = len(w)
     n = len(interval)
     dxdp = (rl / (nr - 1)) ** 2
@@ -123,7 +90,7 @@ def levels_greater(w, interval, rl):
         flev[i] = wig_int(wi, rl) * dxdp
     return flev
 
-def levels_less(w, interval, rl):
+def level_function_less(w, interval, rl):
     nr = len(w)
     n = len(interval)
     dxdp = (rl / (nr - 1)) ** 2
