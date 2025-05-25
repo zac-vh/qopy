@@ -7,8 +7,11 @@ Contains all the operation creating Ket vectors, or acting on ket vectors
 
 import numpy as np
 import math
+import scipy
+import random
+from qopy.state_space.density import displacement_matrix
 
-def ket_sqvac(N, r, phi=0):
+def ket_squeezed_vacuum(N, r, phi=0):
     ket = np.zeros(N, dtype=complex)
     nmax = int((N+1)/2)
     for n in range(nmax):
@@ -18,7 +21,8 @@ def ket_sqvac(N, r, phi=0):
         ket = ket_rotate(ket, phi)
     return ket
 
-def ket_coh(alpha, N):
+
+def ket_coherent(alpha, N):
     ket = np.zeros(N, dtype=complex)
     ket[0] = np.exp(-np.abs(alpha)**2/2)
     for n in range(1, N):
@@ -33,7 +37,7 @@ def ket_rotate(ket, phi):
     return ket
 
 
-def ket_disp(ket, d):
+def ket_displace(ket, d):
     # d = sqrt(2)*alpha
     if not (isinstance(d, list) or (isinstance(d, np.ndarray))):
         d = [np.real(d), np.imag(d)]
@@ -43,12 +47,12 @@ def ket_disp(ket, d):
     for m in range(N):
         km = 0
         for n in range(N):
-            km = km+ket[n]*disp_mat(m, n, alpha)
+            km = km + ket[n] * displacement_matrix(m, n, alpha)
         dispket[m] = km
     return dispket
 
 
-def ket_norm(ket, phased=True, length=None):
+def normalize_ket(ket, phased=True, length=None):
     # Return a normalized ket
     if type(ket) is not np.array:
         ket = np.array(ket, dtype=complex)
@@ -63,3 +67,9 @@ def ket_norm(ket, phased=True, length=None):
     if length is not None:
         ket = np.concatenate([ket, np.zeros(length-len(ket))])
     return ket
+
+
+def ket_random(n):
+    if n == 1:
+        return np.array([np.exp(1j*random.random()*2*math.pi)])
+    return scipy.stats.unitary_group.rvs(n)[0]

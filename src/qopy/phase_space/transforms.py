@@ -152,7 +152,7 @@ def average_negative_volume(w, rl):
     # Makes W a non-negative distribution by averaging the negative parts of W with the lowest positive parts
     nr = len(w)
     dxdp = (rl / (nr - 1)) ** 2
-    vneg = -measures.integrate(w * (w < 0), rl)
+    vneg = -measures.integrate_2d(w * (w < 0), rl)
     wpos = w * (w > 0)
     min_val = np.sort(np.reshape(wpos, nr ** 2))
     min_val = np.unique(min_val[min_val != 0])

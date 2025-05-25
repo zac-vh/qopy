@@ -178,21 +178,20 @@ def wigner_gaussian(rl, nr, alpha=0, covmat=np.eye(2) / 2):
     return w
 
 
-def cross_wigner_psi(fi, fj, rl, nr):
-    # Wigner function of the projector |fi><fj|
-    # fi and fj should be sampled on xl (see get_xl)
+def cross_wigner_psi(f, g, rl, nr):
+    # Wigner function of the projector |f><g|
+    # f and g should be sampled on xl (see get_xl)
     x = np.linspace(-rl / 2, rl / 2, nr)
     wij = np.zeros([nr, nr], dtype=complex)
     for xk in range(nr):
-        # fis = np.conj(fi[xk:xk + nr])
-        # fjs = np.flip(fj[xk:xk + nr])
-        fis = fi[xk:xk + nr]
-        fjs = np.conj(np.flip(fj[xk:xk + nr]))
+        fk = np.conj(f[xk:xk + nr])
+        gk = np.flip(g[xk:xk + nr])
         for pk in range(nr):
-            re = scipy.integrate.simpson(np.real(np.exp(-2 * 1j * x[pk] * x) * fis * fjs), x=x) / math.pi
-            im = scipy.integrate.simpson(np.imag(np.exp(-2 * 1j * x[pk] * x) * fis * fjs), x=x) / math.pi
+            re = scipy.integrate.simpson(np.real(np.exp(2 * 1j * x[pk] * x) * fk * gk), x=x) / math.pi
+            im = scipy.integrate.simpson(np.imag(np.exp(2 * 1j * x[pk] * x) * fk * gk), x=x) / math.pi
             wij[xk][pk] = re + im * 1j
     return wij
+
 
 def wigner_psi(psi, rl, nr):
     # Wigner function of the wave-function psi
@@ -241,3 +240,13 @@ def density_to_wigner_from_set(rho, wijset, isherm=True):
             for j in range(n):
                 w = w + rho[i][j] * wijset[i][j]
     return w
+
+
+def wigner_cubic_phase(gamma, rl, nr):
+    if gamma == 0:
+        return wigner_fock(0, rl, nr)
+    mx, mp = grid(rl, nr)
+    airy = scipy.special.airy((1 + 4 * gamma * (mp + gamma * mx ** 2)) / (2 * gamma) ** (4 / 3))[0]
+    wcubic = 2 ** (2 / 3) * np.exp((1 + 6 * gamma) * mp / (6 * gamma ** 2)) / (
+                np.sqrt(math.pi) * np.abs(gamma) ** (1 / 3)) * airy
+    return wcubic

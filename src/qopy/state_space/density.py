@@ -64,13 +64,13 @@ def rand_ket(n, form='rho'):
         if form == 'rho':
             return np.array([[1]])
         return np.array([np.exp(1j*random.random()*2*math.pi)])
-    ket = rand_u(n)[0]
+    ket = random_unitary(n)[0]
     if form == 'rho':
         return ket_to_rho(ket)
     return ket
 
 
-def rand_rho(n):
+def density_random(n):
     if n == 1:
         return np.ones([1, 1])
     u_rand1 = scipy.stats.unitary_group.rvs(n)
@@ -80,13 +80,13 @@ def rand_rho(n):
     return rho
 
 
-def rand_u(n):
+def random_unitary(n):
     if n == 1:
         return np.array([np.exp(1j*random.random()*2*math.pi)])
     return scipy.stats.unitary_group.rvs(n)
 
 
-def disp_mat(m, n, alpha):
+def displacement_matrix(m, n, alpha):
     # return the value of <m|D(alpha)|n>
     dmn = 0
     for p in range(np.min([m, n])+1):
@@ -95,7 +95,7 @@ def disp_mat(m, n, alpha):
     return dmn
 
 
-def rho_bloch(theta, phi=0, p=1):
+def density_bloch_sphere(theta, phi=0, p=1):
     ket = np.array([np.cos(theta/2), np.exp(1j*phi)*np.sin(theta/2)])
     rho_pure = ket_to_rho(ket)
     rho_mix = p*rho_pure+(1-p)*np.eye(2)/2

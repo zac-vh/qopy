@@ -49,12 +49,12 @@ def psi_gauss(x, alpha=0, rsq=0, phi=0):
     return fx
 
 
-def psi_integrate(psi, xl):
+def integrate_1d(psi, xl):
     return scipy.integrate.simpson(psi, x=xl)
 
 
-def psi_norm(psi, xl):
-    norm = psi_integrate(np.abs(psi)**2, xl)
+def normalize_psi(psi, xl):
+    norm = integrate_1d(np.abs(psi) ** 2, xl)
     return psi/np.sqrt(norm)
 
 
@@ -66,7 +66,7 @@ def get_xl(rl, nr):
     return xl
 
 
-def rx_h(rx, rl):
+def shannon_entropy_1d(rx, rl):
     # Compute the Shannon entropy (or Rényi entropy) of the density function rx
     nr = len(rx)
     x = np.linspace(-rl / 2, rl / 2, nr)
@@ -74,11 +74,11 @@ def rx_h(rx, rl):
     rxlog[np.nonzero(rx)] = np.log(np.abs(rx[np.nonzero(rx)]))
     return - scipy.integrate.simpson(rx * rxlog, x=x)
 
-def rx_renyi(rx, rl, alpha):
+def renyi_entropy_1d(rx, rl, alpha):
     nr = len(rx)
     x = np.linspace(-rl / 2, rl / 2, nr)
     if alpha == 1:
-        return rx_h(rx, rl)
+        return shannon_entropy_1d(rx, rl)
     if math.isinf(alpha):
         m = np.max(np.abs(rx))
         return -np.log(m)
@@ -89,7 +89,7 @@ def rx_renyi(rx, rl, alpha):
     return (1 / (1 - alpha)) * np.log(scipy.integrate.simpson(rxa, x=x))
 
 
-def fx_four(fx, xl):
+def fourier_transform_1d(fx, xl):
     nrl = len(xl)
     phi = np.zeros(nrl, dtype=complex)
     for i in range(nrl):
@@ -101,6 +101,19 @@ def fx_four(fx, xl):
 
 
 def cubic_phase(gamma, x):
-    return np.exp(1j*gamma*x**3)
+    return np.exp(-1j*gamma*x**3)
 
 
+def ket_to_psi(ket, x):
+    n = len(ket)
+    psi = np.zeros(x.shape, dtype=complex)
+    for i in range(n):
+        psi += ket[i]*psi_fock(i, x)
+    return psi
+
+
+def psi_to_ket(psi, xl, N):
+    ket = np.zeros(N, dtype=complex)
+    for i in range(N):
+        ket[i] = integrate_1d(psi*psi_fock(i, xl), xl)
+    return ket
