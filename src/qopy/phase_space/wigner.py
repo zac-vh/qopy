@@ -163,10 +163,14 @@ def wigner_particle_in_a_box(a, rl, nr):
     return w
 
 
+def alpha_to_displacement(alpha):
+    return np.sqrt(2)*np.array([np.real(alpha), np.imag(alpha)])
+
+
 def wigner_gaussian(rl, nr, alpha=0, covmat=np.eye(2) / 2):
     # Wigner function of a Gaussian state with mean d and covariance matrix gamma
     if not (isinstance(alpha, list) or (isinstance(alpha, np.ndarray)) or (isinstance(alpha, tuple))):
-        d = np.sqrt(2)*np.array([np.real(alpha), np.imag(alpha)])
+        d = alpha_to_displacement(alpha)
     else:
         d = alpha
     [g11, g12], [g21, g22] = np.linalg.inv(covmat)
@@ -242,11 +246,14 @@ def density_to_wigner_from_set(rho, wijset, isherm=True):
     return w
 
 
-def wigner_cubic_phase(gamma, rl, nr):
+def wigner_cubic_phase(gamma, rl, nr, disp=(0, 0), sq=1):
+    # Compute the Wigner function of a cubic-phase-gate acting on vacuum
     if gamma == 0:
         return wigner_fock(0, rl, nr)
     mx, mp = grid(rl, nr)
-    airy = scipy.special.airy((1 + 4 * gamma * (mp + gamma * mx ** 2)) / (2 * gamma) ** (4 / 3))[0]
-    wcubic = 2 ** (2 / 3) * np.exp((1 + 6 * gamma) * mp / (6 * gamma ** 2)) / (
-                np.sqrt(math.pi) * np.abs(gamma) ** (1 / 3)) * airy
+    mx = (mx-disp[0])/sq
+    mp = (mp-disp[1])*sq
+    mgamma = np.exp(1/(54*gamma**2))*(4/(3*np.abs(gamma)))**(1/3)/np.sqrt(math.pi)
+    airy = scipy.special.airy((4/(3*gamma))**(1/3)*(3*gamma*mx**2-mp+1/(12*gamma)))[0]
+    wcubic = mgamma*np.exp(-mp/(3*gamma))*airy
     return wcubic

@@ -29,3 +29,15 @@ def density_tensor(r1, r2):
     # to trace over second mode, trace over indices 1,3
     # to trace over first mode, trace over indices 0,2
     return np.transpose(np.tensordot(r1, r2, axes=0), axes=[0, 2, 1, 3])
+
+
+def trace_2mode(rho):
+    # Compute the trace of a 2m state
+    # Convention is |i,j><k,l|
+    ni = np.shape(rho)[0]
+    nj = np.shape(rho)[1]
+    tr = 0
+    for i in range(ni):
+        for j in range(nj):
+            tr += rho[i][j][i][j]
+    return tr

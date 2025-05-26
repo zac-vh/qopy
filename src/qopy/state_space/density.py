@@ -100,3 +100,17 @@ def density_bloch_sphere(theta, phi=0, p=1):
     rho_pure = ket_to_rho(ket)
     rho_mix = p*rho_pure+(1-p)*np.eye(2)/2
     return rho_mix
+
+
+def density_trim(rho, tol=0):
+    n = len(rho)
+    iszero = True
+    for i in range(n - 1):
+        iszero = (iszero and (np.abs(rho[n - 1][i])) <= tol)
+        iszero = (iszero and (np.abs(rho[i][n - 1])) <= tol)
+    iszero = (iszero and (np.abs(rho[n - 1][n - 1])) <= tol)
+    if iszero:
+        rho = rho[:n - 1, :n - 1]
+        if len(rho) > 1:
+            rho = rho_trim(rho, tol)
+    return rho

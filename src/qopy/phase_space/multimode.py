@@ -2,9 +2,7 @@ import numpy as np
 import scipy
 
 def phase_distribution_tensor(w1, w2):
-    # use the convention to use order |0,1><2,3|=|0><2|o|1><3|
-    # to trace over second mode, trace over indices 1,3
-    # to trace over first mode, trace over indices 0,2
+    # use the convention to use order W(x_1,p_1,x_2,p_2)=W(x_1,p_1)W(x_2,p_2)
     return np.tensordot(w1, w2, axes=0)
 
 

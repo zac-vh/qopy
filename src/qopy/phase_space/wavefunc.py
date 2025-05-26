@@ -101,7 +101,7 @@ def fourier_transform_1d(fx, xl):
 
 
 def cubic_phase(gamma, x):
-    return np.exp(-1j*gamma*x**3)
+    return np.exp(1j*gamma*x**3)
 
 
 def ket_to_psi(ket, x):

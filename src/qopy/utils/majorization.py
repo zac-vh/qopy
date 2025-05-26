@@ -1,70 +1,57 @@
 import numpy as np
+from qopy.phase_space.measures import integrate_2d as wig_int
 
 
+def lorenz_decreasing(w, only_positive=True):
+    v = w.ravel()
+    if only_positive:
+        v = np.maximum(v, np.zeros(len(v)))
+    return np.cumsum(np.sort(v)[::-1])
 
 
-def wig_cum(w, rl=None, arrow='dec'):
-    # Compute the discrete cumulative sum of the Wigner function
+def lorenz_increasing(w, only_negative=True):
+    v = w.ravel()
+    if only_negative:
+        v = np.minimum(v, np.zeros(len(v)))
+    return np.cumsum(np.sort(v))
+
+
+def lorenz_decreasing_2d(w, rl, only_positive=True):
     nr = len(w)
-    if rl is None:
-        rl = nr
-    v = np.reshape(w, nr ** 2)
-    if arrow == 'dec':
-        vd = np.sort(v)[::-1]
-    if arrow == 'inc':
-        vd = np.sort(v)
-    if arrow == 'pos':
-        vd = np.sort(np.maximum(np.zeros(nr ** 2), v))[::-1]
-    if arrow == 'neg':
-        vd = np.sort(np.minimum(np.zeros(nr ** 2), v))
-    vdc = np.cumsum(vd) * (rl / (nr-1)) ** 2
-    return vdc
+    dim = len(w.shape)
+    return lorenz_decreasing(w, only_positive) * (rl / (nr - 1)) ** dim
 
 
-def wig_major(w1, w2, rl=None, tol=0):
-    # Check whether w1 majorizes w2
-    # tol is a tolerance value
-    w1cum = wig_cum(w1, rl)
-    w2cum = wig_cum(w2, rl)
-    diff = np.min(w1cum - w2cum)
-    maj = False
-    if diff >= -tol:
-        maj = True
-    return maj
-
-
-def vector_majorization(p, q, tol=0):
-    # Check whether p majorizes q
-    # tol is a tolerance value
-    lp = len(p)
-    lq = len(q)
-    l = np.max([lp, lq])
-    p = np.concatenate([p, np.zeros(l-lp)])
-    q = np.concatenate([q, np.zeros(l-lq)])
-    pcum = np.cumsum(np.sort(p)[::-1])
-    qcum = np.cumsum(np.sort(q)[::-1])
-    diff = np.min(pcum - qcum)
-    maj = False
-    if diff >= -tol:
-        maj = True
-    return maj
-
-
-def wig_rear(w, rear='dec'):
+def lorenz_increasing_2d(w, rl, only_negative=True):
     nr = len(w)
-    wr = np.zeros([nr, nr])
-    wd = np.sort(np.reshape(w, nr**2))
-    if rear == 'dec':
-        wd = wd[::-1]
-    elif rear == 'pos':
-            wd = np.maximum(np.zeros(nr**2), wd)
-            wd = wd[::-1]
-    elif rear == 'neg':
-            wd = np.minimum(np.zeros(nr**2), wd)
+    dim = len(w.shape)
+    return lorenz_increasing(w, only_negative) * (rl / (nr - 1)) ** dim
+
+
+def decreasing_rearrangement_2d(w, only_positive=True):
+    nr = len(w)
+    wd = np.sort(w.ravel())[::-1]
+    if only_positive:
+        wd = np.maximum(np.zeros(len(wd)), wd)
     x = np.linspace(-1, 1, nr)
     mx, my = np.meshgrid(x, x)
     m = mx ** 2 + my ** 2
     ind = np.unravel_index(np.argsort(m, axis=None), m.shape)
+    wr = np.zeros([nr, nr])
+    wr[ind] = wd
+    return wr
+
+
+def increasing_rearrangement_2d(w, only_negative=True):
+    nr = len(w)
+    wd = np.sort(w.ravel())
+    if only_negative:
+        wd = np.minimum(np.zeros(len(wd)), wd)
+    x = np.linspace(-1, 1, nr)
+    mx, my = np.meshgrid(x, x)
+    m = mx ** 2 + my ** 2
+    ind = np.unravel_index(np.argsort(m, axis=None), m.shape)
+    wr = np.zeros([nr, nr])
     wr[ind] = wd
     return wr
 
@@ -80,6 +67,7 @@ def level_function_differential(w, interval, rl):
     flev[-1] = wig_int(wi >= interval[-1], rl)*dxdp
     return flev
 
+
 def level_function_greater(w, interval, rl):
     nr = len(w)
     n = len(interval)
@@ -89,6 +77,7 @@ def level_function_greater(w, interval, rl):
         wi = (w >= interval[i])
         flev[i] = wig_int(wi, rl) * dxdp
     return flev
+
 
 def level_function_less(w, interval, rl):
     nr = len(w)
