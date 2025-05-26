@@ -7,7 +7,7 @@ import numpy as np
 
 
 rl = 10 #size of phase-space area
-nr = 50 #number of points
+nr = 200 #number of points
 
 n = 4
 wfock = wig.wigner_fock(n, rl, nr)
@@ -24,7 +24,7 @@ plotw([wfock, wcubic], rl) #checking that all the Wigner function is contained
 
 
 
-tol = 1e-8
+tol = 1e-4
 
 vfock = wfock.ravel()
 vfock = vfock[np.abs(vfock) > tol]
@@ -43,11 +43,11 @@ lorenz_cubic_2m_inc = maj.lorenz_increasing(vcubic_2mode)*(rl/(nr-1))**4
 lorenz_fock_2m_dec = maj.lorenz_decreasing(vfock_2mode)*(rl/(nr-1))**4
 lorenz_fock_2m_inc = maj.lorenz_increasing(vfock_2mode)*(rl/(nr-1))**4
 
-plt.plot(lorenz_fock_2m_dec, label='dec fock')
-plt.plot(lorenz_fock_2m_inc, label='inc fock')
-plt.plot(lorenz_cubic_2m_dec, label='dec cubic')
-plt.plot(lorenz_cubic_2m_inc, label='inc cubic')
-
+plt.plot(lorenz_fock_2m_dec, label='dec fock', color='tab:blue')
+plt.plot(lorenz_fock_2m_inc, label='inc fock', color='tab:blue', linestyle='dashed')
+plt.plot(lorenz_cubic_2m_dec, label='dec cubic', color='tab:orange')
+plt.plot(lorenz_cubic_2m_inc, label='inc cubic', color='tab:orange', linestyle='dashed')
+plt.legend()
 plt.show()
 
 '''

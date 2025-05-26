@@ -11,13 +11,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy
 
-rl = 50
-nr = 2000
+rl = 10
+nr = 1000
 
 
+gamma = 2
+disp = (0, -3)
+sq = 1.5
 
-a = np.linspace(-5, 5, 10)
+w = wig.wigner_fock(1, rl, nr)
+wcubic = wig.wigner_cubic_phase(gamma, rl, nr, disp, sq)
 
-b = a.ravel()
+wplot.plot_wigner_2d([w, wcubic], rl)
 
-print(a-b)
+wplot.plot_wigner_zero_contour([w, wcubic], rl)
+

@@ -4,7 +4,7 @@ from qopy.utils.grid import grid_square as grid
 
 
 def fock_cross_husimi(i, j, rl, nr, hbar=1):
-    #choose hbar=1/2 to have q0=w0
+    # Choose hbar=1/2 to have q0=w0
     mx, mp = grid(rl, nr)
     ma = (mx+1j*mp)/np.sqrt(2*hbar)
     fact = 2*hbar*math.pi

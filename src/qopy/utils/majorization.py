@@ -3,6 +3,8 @@ from qopy.phase_space.measures import integrate_2d as wig_int
 
 
 def lorenz_decreasing(w, only_positive=True):
+    # Compute the Lorenz decreasing curve of any type of distribution
+    # The input array is converted to a vector
     v = w.ravel()
     if only_positive:
         v = np.maximum(v, np.zeros(len(v)))
@@ -10,6 +12,8 @@ def lorenz_decreasing(w, only_positive=True):
 
 
 def lorenz_increasing(w, only_negative=True):
+    # Compute the Lorenz increasing curve of any type of distribution
+    # The input array is converted to a vector
     v = w.ravel()
     if only_negative:
         v = np.minimum(v, np.zeros(len(v)))
@@ -17,18 +21,21 @@ def lorenz_increasing(w, only_negative=True):
 
 
 def lorenz_decreasing_2d(w, rl, only_positive=True):
+    # Compute the Lorenz decreasing curve of a (possibly multimode) phase-space function
     nr = len(w)
     dim = len(w.shape)
     return lorenz_decreasing(w, only_positive) * (rl / (nr - 1)) ** dim
 
 
 def lorenz_increasing_2d(w, rl, only_negative=True):
+    # Compute the Lorenz increasing curve of a (possibly multimode) phase-space function
     nr = len(w)
     dim = len(w.shape)
     return lorenz_increasing(w, only_negative) * (rl / (nr - 1)) ** dim
 
 
 def decreasing_rearrangement_2d(w, only_positive=True):
+    # Compute the decreasing rearrangement of a single-mode phase-space function
     nr = len(w)
     wd = np.sort(w.ravel())[::-1]
     if only_positive:
@@ -43,6 +50,7 @@ def decreasing_rearrangement_2d(w, only_positive=True):
 
 
 def increasing_rearrangement_2d(w, only_negative=True):
+    # Compute the increasing rearrangement of a single-mode phase-space function
     nr = len(w)
     wd = np.sort(w.ravel())
     if only_negative:

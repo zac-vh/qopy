@@ -29,7 +29,7 @@ def vertigo(rho, s, normalized=False):
     return rout
 
 
-def plc(rho, eta):
+def pure_loss_channel(rho, eta):
     N = len(rho)
     if eta == 1:
         return rho
