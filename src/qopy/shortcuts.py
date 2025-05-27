@@ -3,7 +3,7 @@ from qopy.plotting import plotw
 
 
 
-import qopy.phase_space.wavefunc as wfunc
+import qopy.phase_space.wavefunction as wfunc
 import qopy.phase_space.wigner as wig
 import qopy.phase_space.measures as meas
 from qopy.phase_space.measures import negative_volume

@@ -1,24 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from qopy.utils.grid import grid_square as grid
+from matplotlib.widgets import Slider
+from qopy.phase_space.measures import marginal
 
 
-
-def plotr(rho):
-    # Plot rho
-    if len(np.shape(rho)) == 2:
-        rho = [rho]
-    N = len(rho)
-    fig = plt.figure()
-    for i in range(N):
-        ax = fig.add_subplot(1, N, i + 1)
-        ploti = ax.matshow(np.abs(rho[i]))
-        plt.colorbar(ploti, ax=ax)
-    plt.show()
-
-
-
-def plot_wigner_2d(wlist, rl=None, titles=None, maxval=None, cmap='RdBu'):
+def plot_2d(wlist, rl=None, titles=None, maxval=None, cmap='RdBu'):
     if isinstance(wlist, np.ndarray) and wlist.ndim == 2:
         wlist = [wlist]
     N = len(wlist)
@@ -47,7 +34,7 @@ def plot_wigner_2d(wlist, rl=None, titles=None, maxval=None, cmap='RdBu'):
     plt.show()
 
 
-def plot_wigner_3d(wlist, rl=None, titles=None, maxval=None, cmap='viridis', stride=None):
+def plot_3d(wlist, rl=None, titles=None, maxval=None, cmap='viridis', stride=None):
     if isinstance(wlist, np.ndarray) and wlist.ndim == 2:
         wlist = [wlist]
 
@@ -90,7 +77,7 @@ def plot_wigner_3d(wlist, rl=None, titles=None, maxval=None, cmap='viridis', str
     plt.show()
 
 
-def plot_wigner_contour(wlist, rl=None, titles=None, levels=20, cmap='RdBu', linewidths=0.8):
+def plot_contour(wlist, rl=None, titles=None, levels=20, cmap='RdBu', linewidths=0.8):
     if isinstance(wlist, np.ndarray) and wlist.ndim == 2:
         wlist = [wlist]
 
@@ -124,7 +111,7 @@ def plot_wigner_contour(wlist, rl=None, titles=None, levels=20, cmap='RdBu', lin
     plt.show()
 
 
-def plot_wigner_lines(wlist, rl=None, titles=None, levels=20, colors='black', linewidths=1.0):
+def plot_lines(wlist, rl=None, titles=None, levels=20, colors='black', linewidths=1.0):
     """
     Plot one or more Wigner functions using contour lines only (no fill).
 
@@ -173,7 +160,7 @@ def plot_wigner_lines(wlist, rl=None, titles=None, levels=20, colors='black', li
     plt.show()
 
 
-def plot_wigner_zero_contour(wlist, rl=None, titles=None, color='black', linewidth=1.5, linestyle='solid'):
+def plot_zero_contour(wlist, rl=None, titles=None, color='black', linewidth=1.5, linestyle='solid'):
     """
     Plot the zero-level contour (nodal line) of one or more Wigner functions.
 
@@ -219,4 +206,48 @@ def plot_wigner_zero_contour(wlist, rl=None, titles=None, color='black', linewid
             ax.set_title(titles[i])
 
     plt.tight_layout()
+    plt.show()
+
+
+def plot_marginal_with_slider(W, rl, adaptive_maxval=False):
+    nr = W.shape[0]
+    x = np.linspace(-rl / 2, rl / 2, nr)
+    initial_theta = 0.0
+
+    # Initial marginal
+    marg_init = marginal(W, rl, initial_theta)
+    max_val = np.max(marg_init)
+
+    # Plot setup
+    fig, ax = plt.subplots()
+    plt.subplots_adjust(bottom=0.25)
+
+    line, = ax.plot(x, marg_init, lw=2)
+    ax.set_xlabel(r"$x_\theta$")
+    ax.set_ylabel("$\\rho_{\\theta}$")
+    ax.set_title("Rotated marginal distribution")
+    ax.set_xlim(-rl/2, rl/2)
+
+    if adaptive_maxval:
+        ax.set_ylim(0, 1.1 * max_val)
+    else:
+        ax.set_ylim(0, 1.5 * max_val)
+
+    # Slider
+    ax_theta = plt.axes([0.2, 0.1, 0.65, 0.03])
+    slider_theta = Slider(ax_theta, 'θ (deg)', 0, 180, valinit=initial_theta)
+
+    # Update function
+    def update(val):
+        theta = slider_theta.val*np.pi/180
+        m = marginal(W, rl, theta)
+        line.set_ydata(m)
+        if adaptive_maxval:
+            ax.set_ylim(0, 1.1 * np.max(m))
+        else:
+            ax.set_ylim(0, 1.5 * max_val)
+        fig.canvas.draw_idle()
+
+    slider_theta.on_changed(update)
+
     plt.show()

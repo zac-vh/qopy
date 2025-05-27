@@ -1,28 +1,26 @@
-import qopy.phase_space.wavefunc as wfunc
+import qopy.phase_space.wavefunction as wfunc
 import qopy.phase_space.wigner as wig
 import qopy.phase_space.measures as meas
-from qopy.phase_space.measures import negative_volume
 import qopy.plotting as wplot
-from qopy.utils.grid import grid_square as grid
-import qopy.state_space.ket as qopyket
-import qopy.state_space.density as qopydens
+import qopy.state_space.ket as qket
+import qopy.state_space.density as qdens
 import math
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy
+import time
+import random
+import qopy.state_space.bosonic_operators as bos
+import numpy as np
+import matplotlib.pyplot as plt
+
 
 rl = 10
-nr = 1000
+nr = 500
+N = 4
+ket = qket.random_ket(N)
+rho = qdens.ket_to_rho(ket)
+w = wig.density_to_wigner(rho, rl, nr)
 
 
-gamma = 2
-disp = (0, -3)
-sq = 1.5
-
-w = wig.wigner_fock(1, rl, nr)
-wcubic = wig.wigner_cubic_phase(gamma, rl, nr, disp, sq)
-
-wplot.plot_wigner_2d([w, wcubic], rl)
-
-wplot.plot_wigner_zero_contour([w, wcubic], rl)
-
+wplot.plot_marginal_with_slider(w, rl)

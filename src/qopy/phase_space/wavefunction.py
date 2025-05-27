@@ -3,20 +3,12 @@ import math
 import scipy
 
 
+
 def psi_fock(n, x):
     # Wave-function of the nth Fock state
     p = np.append(np.zeros(n), 1)
-    f = np.multiply(np.exp(-x ** 2 / 2), np.polynomial.hermite.hermval(x, p)) \
-        / (math.pi ** (1 / 4) * 2 ** (n / 2) * math.sqrt(math.factorial(n)))
+    f = np.multiply(np.exp(-x ** 2 / 2), np.polynomial.hermite.hermval(x, p)) / (math.pi ** (1 / 4) * 2 ** (n / 2) * math.sqrt(scipy.special.factorial(n)))
     return f
-
-def psi_fock_superposition(ket, x):
-    # Wave-function of ket (superposition of Fock ket-vectors)
-    n = len(ket)
-    fx = np.zeros(np.shape(x), dtype=complex)
-    for i in range(n):
-        fx += ket[i] * psi_fock(i, x)
-    return fx
 
 
 def psi_bump(xl, dr=1, pwr=1):

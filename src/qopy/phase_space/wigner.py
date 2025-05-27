@@ -14,6 +14,11 @@ import math
 import scipy
 import mpmath
 from qopy.utils.grid import grid_square as grid
+from qopy.utils.linalg import matrix_eigenvalues_eigenvectors
+from qopy.phase_space.wavefunction import ket_to_psi
+from qopy.phase_space.wavefunction import get_xl
+from numba import njit
+
 
 def wigner_radial_fock(n, r):
     # Radial function of the Wigner function of the nth Fock state
@@ -63,14 +68,69 @@ def cross_wigner_fock(i, j, rl, nr):
     return wij
 
 
+def density_to_wigner(rho, rl, nr, isherm=True):
+    n = rho.shape[0]
+    w = np.zeros((nr, nr), dtype=complex)
+    for i in range(n):
+        for j in range(i+1 if isherm else n):
+            rij = rho[i, j]
+            if rij == 0:
+                continue
+            wij = cross_wigner_fock(i, j, rl, nr)
+            if isherm:
+                if i != j:
+                    w += 2*np.real(rij * wij)
+                if i == j:
+                    w += rij * wij
+            else:
+                w += rij * wij
+    return np.real(w) if isherm else w
+
+
+def density_to_wigner_from_set(rho, wijset, isherm=True):
+    # Build the Wigner function of the density matrix rho (in wij_set basis)
+    n = rho.shape[0]
+    w = np.zeros(wijset.shape[2:], dtype=complex)
+    if isherm:
+        for i in range(n):
+            w += rho[i, i] * wijset[i, i]
+            for j in range(i+1, n):
+                rij = rho[i, j]
+                if rij == 0:
+                    continue
+                w += 2*np.real(rij * wijset[i, j])
+        w = np.real(w)
+    else:
+        for i in range(n):
+            for j in range(n):
+                rij = rho[i, j]
+                if rij == 0:
+                    continue
+                w += rij * wijset[i, j]
+    return w
+
+
+def density_to_wigner_from_psi(rho, rl, nr):
+    # Compute the Wigner function from the wavefunction of the eigenvectors of rho
+    # More efficient when N >> 1
+    xl = get_xl(rl, nr)
+    w = np.zeros((nr, nr), dtype=complex)
+    eigvals, eigkets = matrix_eigenvalues_eigenvectors(rho)
+    N = len(eigvals)
+    for j in range(N):
+        psij = ket_to_psi(eigkets[j], xl)
+        w += eigvals[j] * wigner_psi(psij, rl, nr)
+    return np.real(w)
+
+
 def cross_wigner_fock_set(N, rl, nr):
-    wijset = np.zeros([N, N, nr, nr], dtype=complex)
+    wijset = np.empty([N, N, nr, nr], dtype=complex)
     for i in range(N):
-        wijset[i][i] = wigner_fock(i, rl, nr)
+        wijset[i, i] = wigner_fock(i, rl, nr)
         for j in range(i + 1, N):
             wij = cross_wigner_fock(i, j, rl, nr)
-            wijset[i][j] = wij
-            wijset[j][i] = np.conj(wij)
+            wijset[i, j] = wij
+            wijset[j, i] = np.conj(wij)
     return wijset
 
 
@@ -183,67 +243,29 @@ def wigner_gaussian(rl, nr, alpha=0, covmat=np.eye(2) / 2):
 
 
 def cross_wigner_psi(f, g, rl, nr):
-    # Wigner function of the projector |f><g|
-    # f and g should be sampled on xl (see get_xl)
+    """
+    Fast version: vectorized over p, avoids double for-loop and simpson.
+    """
     x = np.linspace(-rl / 2, rl / 2, nr)
-    wij = np.zeros([nr, nr], dtype=complex)
+    dx = x[1] - x[0]
+    wij = np.zeros((nr, nr), dtype=complex)
+
+    phase = np.exp(2j * np.outer(x, x))  # shape (nr, nr)
+
     for xk in range(nr):
-        fk = np.conj(f[xk:xk + nr])
-        gk = np.flip(g[xk:xk + nr])
-        for pk in range(nr):
-            re = scipy.integrate.simpson(np.real(np.exp(2 * 1j * x[pk] * x) * fk * gk), x=x) / math.pi
-            im = scipy.integrate.simpson(np.imag(np.exp(2 * 1j * x[pk] * x) * fk * gk), x=x) / math.pi
-            wij[xk][pk] = re + im * 1j
+        fk = np.conj(f[xk:xk + nr])       # shape (nr,)
+        gk = np.flip(g[xk:xk + nr])       # shape (nr,)
+        integrand = fk * gk               # shape (nr,)
+        wij[xk, :] = dx * np.dot(phase, integrand) / math.pi  # dot over axis=1
+
     return wij
+
 
 
 def wigner_psi(psi, rl, nr):
     # Wigner function of the wave-function psi
     # psi should be sampled on xl (see get_xl)
     return np.real(cross_wigner_psi(psi, psi, rl, nr))
-
-
-def density_to_wigner(rho, rl, nr, isherm=True):
-    # Build the Wigner function of the density matrix rho (in wij_set basis)
-    n = len(rho)
-    w = np.zeros([nr, nr])
-    if isherm:
-        for i in range(n):
-            rii = rho[i][i]
-            if rii != 0:
-                w = w + rii * cross_wigner_fock(i, i, rl, nr)
-            for j in range(i+1, n):
-                rij = rho[i][j]
-                if rij != 0:
-                    rho_wij = rho[i][j] * cross_wigner_fock(i, j, rl, nr)
-                    w = w + rho_wij + np.conj(rho_wij)
-        w = np.real(w)
-    else:
-        for i in range(n):
-            for j in range(n):
-                rij = rho[i][j]
-                if rij != 0:
-                    w = w + rho[i][j] * cross_wigner_fock(i, j, rl, nr)
-    return w
-
-
-def density_to_wigner_from_set(rho, wijset, isherm=True):
-    # Build the Wigner function of the density matrix rho (in wij_set basis)
-    n = len(rho)
-    #nr = np.shape(wijset)[2]
-    w = np.zeros(wijset.shape[2:4])
-    if isherm:
-        for i in range(n):
-            w = w + rho[i][i] * wijset[i][i]
-            for j in range(i+1, n):
-                rho_wij = rho[i][j] * wijset[i][j]
-                w = w + 2*np.real(rho_wij)
-        w = np.real(w)
-    else:
-        for i in range(n):
-            for j in range(n):
-                w = w + rho[i][j] * wijset[i][j]
-    return w
 
 
 def wigner_cubic_phase(gamma, rl, nr, disp=(0, 0), sq=1):

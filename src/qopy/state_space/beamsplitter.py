@@ -1,6 +1,6 @@
 import numpy as np
 import scipy
-from qopy.state_space.density import rho_trim
+from qopy.state_space.density import trim_rho
 
 
 def bs_transition_amplitude(i, k, n, eta=0.5):
@@ -39,8 +39,8 @@ def bs_output_1m(rho1, rho2, eta=0.5, mode=1):
 
 
 def bs_output_1m_mode1(rho1, rho2, eta=0.5):
-    rho1 = rho_trim(rho1)
-    rho2 = rho_trim(rho2)
+    rho1 = trim_rho(rho1)
+    rho2 = trim_rho(rho2)
     n1 = len(rho1)
     n2 = len(rho2)
     n = n1+n2-1
@@ -59,8 +59,8 @@ def bs_output_1m_mode1(rho1, rho2, eta=0.5):
 
 
 def bs_output_1m_mode2(rho1, rho2, eta=0.5):
-    rho1 = rho_trim(rho1)
-    rho2 = rho_trim(rho2)
+    rho1 = trim_rho(rho1)
+    rho2 = trim_rho(rho2)
     n1 = len(rho1)
     n2 = len(rho2)
     ntot = n1+n2-1

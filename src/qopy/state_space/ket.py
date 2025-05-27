@@ -18,7 +18,7 @@ def ket_squeezed_vacuum(N, r, phi=0):
         ket[2*n] = (np.tanh(r)/2)**n*np.sqrt(float(math.factorial(2*n)))/math.factorial(n)
     ket = ket/np.sqrt(np.cosh(r))
     if phi != 0:
-        ket = ket_rotate(ket, phi)
+        ket = rotate_ket(ket, phi)
     return ket
 
 
@@ -30,14 +30,14 @@ def ket_coherent(alpha, N):
     return ket
 
 
-def ket_rotate(ket, phi):
+def rotate_ket(ket, phi):
     N = len(ket)
     for i in range(N):
         ket[i] = ket[i]*np.exp(-1j*phi*i)
     return ket
 
 
-def ket_displace(ket, d):
+def displace_ket(ket, d):
     # d = sqrt(2)*alpha
     if not (isinstance(d, list) or (isinstance(d, np.ndarray))):
         d = [np.real(d), np.imag(d)]
@@ -69,7 +69,7 @@ def normalize_ket(ket, phased=True, length=None):
     return ket
 
 
-def ket_random(n):
-    if n == 1:
+def random_ket(N):
+    if N == 1:
         return np.array([np.exp(1j*random.random()*2*math.pi)])
-    return scipy.stats.unitary_group.rvs(n)[0]
+    return scipy.stats.unitary_group.rvs(N)[0]
