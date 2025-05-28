@@ -18,6 +18,10 @@ def momentum(N):
     return 1j*(creation(N)-annihilation(N))/np.sqrt(2)
 
 
+def quadrature(N, theta):
+    return np.cos(theta)*position(N)+np.sin(theta)*momentum(N)
+
+
 def rotation(N, theta):
     return np.diag(np.exp(-1j * theta * np.arange(N)))
 
@@ -30,11 +34,14 @@ def squeezing(N, r):
 
 
 def displacement(N, alpha):
-    G = alpha*creation(N)+np.conj(alpha)*annihilation(N)
+    G = alpha*creation(N) - np.conj(alpha)*annihilation(N)
     return expm(G)
 
 
-def parity(N):
+def parity(N, alpha=0):
+    par = np.diag((-1)**np.arange(N)).astype(complex)
+    if alpha != 0:
+        par = displacement(N, alpha) @ par @ displacement(N, -alpha)
     return np.diag((-1)**np.arange(N)).astype(complex)
 
 

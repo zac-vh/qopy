@@ -15,12 +15,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-rl = 10
-nr = 500
-N = 4
-ket = qket.random_ket(N)
-rho = qdens.ket_to_rho(ket)
-w = wig.density_to_wigner(rho, rl, nr)
+
+N = 10
+
+alpha = 1+2j
+
+m = 2
+n = 4
+
+Dalpha = bos.displacement(N, alpha)
+disp = qdens.displacement_matrix(m, n, alpha)
 
 
-wplot.plot_marginal_with_slider(w, rl)
+print(Dalpha[n, m]-disp)
