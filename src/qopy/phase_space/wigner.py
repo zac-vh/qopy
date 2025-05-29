@@ -29,6 +29,7 @@ def wigner_radial_fock(n, r):
 
 def wigner_area_fock(n, a):
     # Area function associated to the Wigner function of the nth Fock state
+    # F(a) = pi*W(sqrt(a))
     p = np.append(np.zeros(n), 1)
     wr = (-1) ** n *np.multiply(np.exp(-a), np.polynomial.laguerre.lagval(2 * a, p))
     return wr
@@ -172,7 +173,7 @@ def cross_wigner_coherent_squeezed(alpha, beta, rl, nr, sq=1):
     return wij
 
 
-def wigner_coherent_superposition_squeezed(alphas, cis, rl, nr, sq=1, normalized=True):
+def wigner_coherent_superposition(alphas, cis, rl, nr, sq=1, normalized=True):
     w = np.zeros([nr, nr])
     n = len(alphas)
     norm = 0
