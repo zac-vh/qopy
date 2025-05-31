@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import scipy
-
+from qopy.utils.polynomials import poly_hermite
 
 
 def psi_fock(n, x):
@@ -20,7 +20,7 @@ def psi_bump(xl, dr=1, pwr=1):
     return fx/np.sqrt(norm)
 
 
-def psi_gauss(x, alpha=0, rsq=0, phi=0):
+def psi_gaussian(x, alpha=0, rsq=0, phi=0):
     # Wave-function of a squeezed coherent state
     # Squeezing is performed with an angle of phi with respect to x-axis, then displaced
     # If alpha is a a tuple: alpha = (Re[alpha]+iIm[alpha])/sqrt(2)
@@ -39,6 +39,21 @@ def psi_gauss(x, alpha=0, rsq=0, phi=0):
                   / (np.cosh(rsq) - np.exp(2 * 1j * phi) * np.sinh(rsq))) \
          * np.exp(1j * p0 * x) * np.exp(-1j*x0*p0/2)
     return fx
+
+
+def psi_gaussian_fock(x, alpha=0, xi=0, n=0):
+    # Compute the wave function of a displaced squeezed Fock state, i.e. psi(x) = <x|D(alpha)S(xi)|n>
+    # alpha and xi are complex-valued
+    # see https://arxiv.org/abs/quant-ph/9612050v1
+    x0 = np.sqrt(2)*np.real(alpha)
+    p0 = np.sqrt(2)*np.imag(alpha)
+    r = np.abs(xi)
+    phi = np.angle(xi)
+    F1 = np.cosh(r)+np.exp(1j*phi)*np.sinh(r)
+    F2 = (1-1j*np.sin(phi)*np.sinh(r)*(np.cosh(r)+np.exp(1j*phi)*np.sinh(r)))/((np.cosh(r)+np.cos(phi)*np.sinh(r))*(np.cosh(r)+np.exp(1j*phi)*np.sinh(r)))
+    F3 = (np.cosh(r)+np.exp(-1j*phi)*np.sin(phi)*np.sinh(r))/(np.cosh(r)+np.exp(1j*phi)*np.sin(phi)*np.sinh(r))
+    F4 = np.sqrt(np.cosh(r)**2+np.sinh(r)**2+2*np.cos(phi)*np.cosh(r)*np.sinh(r))
+    return math.pi**(-1/4)*np.exp(-1j*x0*p0/2)*F1**(-1/2)*np.exp(-((x-x0)**2/2)*F2+1j*p0*x)*(F3**(n/2))*(2**n*math.factorial(n))**(-1/2)*poly_hermite(n, (x-x0)/F4)
 
 
 def integrate_1d(psi, xl):

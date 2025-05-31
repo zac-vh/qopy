@@ -15,16 +15,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+rl = 30
+nr = 1000
 
-N = 10
-
-alpha = 1+2j
-
-m = 2
-n = 4
-
-Dalpha = bos.displacement(N, alpha)
-disp = qdens.displacement_matrix(m, n, alpha)
+N = 8
+alpha_list = 5*np.exp(2*np.pi*1j*np.arange(N)/N)
+xi_list = -1*np.exp(4*np.pi*1j*np.arange(N)/N)
+amp_list = np.ones(N)#np.exp(2*np.pi*1j*np.arange(N)/N)
 
 
-print(Dalpha[n, m]-disp)
+w = wig.wigner_gaussian_superposition(alpha_list, xi_list, amp_list, rl, nr)
+w24 = wig.wigner_fock(24, rl, nr)
+
+print(meas.integrate_2d(w, rl))
+print(meas.purity(w, rl))
+
+wplot.plot_2d([w, w24, w-w24], rl)

@@ -162,12 +162,7 @@ def cross_wigner_coherent_xp(alpha, beta, x, p):
     return (1/math.pi)*np.exp(exp)
 
 
-def cross_wigner_coherent(a, b, alpha):
-    # return the complex Wigner function of |a><b|
-    return (2/math.pi)*np.exp(-2*np.abs(alpha-(a+b)/2)**2)*np.exp(1j*np.imag(2*alpha*np.conj(b-a)))*np.exp(1j*np.imag(b*np.conj(a)))
-
-
-def cross_wigner_coherent_squeezed(alpha, beta, rl, nr, sq=1):
+def cross_wigner_coherent(alpha, beta, rl, nr, sq=1):
     mx, mp = grid(rl, nr)
     wij = cross_wigner_coherent_xp(alpha, beta, sq * mx, mp / sq)
     return wij
@@ -180,13 +175,74 @@ def wigner_coherent_superposition(alphas, cis, rl, nr, sq=1, normalized=True):
     for i in range(n):
         ai = alphas[i]
         ci = cis[i]
-        w = w + np.abs(ci) ** 2 * cross_wigner_coherent_squeezed(ai, ai, rl, nr, sq)
+        w = w + np.abs(ci) ** 2 * cross_wigner_coherent(ai, ai, rl, nr, sq)
         norm = norm + np.abs(ci)**2
         for j in range(i+1, n):
             aj = alphas[j]
             cj = cis[j]
-            w = w + 2*np.real(ci * np.conj(cj) * cross_wigner_coherent_squeezed(ai, aj, rl, nr, sq))
+            w = w + 2*np.real(ci * np.conj(cj) * cross_wigner_coherent(ai, aj, rl, nr, sq))
             norm = norm + 2*np.real(np.conj(cj)*ci*np.exp(-(1/2)*(np.abs(aj)**2+np.abs(ai)**2-2*ai*np.conj(aj))))
+    w = np.real(w)
+    if normalized:
+        w = w/norm
+    return w
+
+
+def cross_wigner_gaussian_xp(alpha1, alpha2, xi1, xi2, x, p):
+    x01 = np.sqrt(2) * np.real(alpha1)
+    p01 = np.sqrt(2) * np.imag(alpha1)
+    r1 = np.abs(xi1)
+    phi1 = np.angle(xi1)
+    x02 = np.sqrt(2) * np.real(alpha2)
+    p02 = np.sqrt(2) * np.imag(alpha2)
+    r2 = np.abs(xi2)
+    phi2 = np.angle(xi2)
+    F11 = np.cosh(r1) + np.exp(1j * phi1) * np.sinh(r1)
+    F21 = (1 - 1j * np.sin(phi1) * np.sinh(r1) * (np.cosh(r1) + np.exp(1j * phi1) * np.sinh(r1))) / ((np.cosh(r1) + np.cos(phi1) * np.sinh(r1)) * (np.cosh(r1) + np.exp(1j * phi1) * np.sinh(r1)))
+    F12 = np.cosh(r2) + np.exp(1j * phi2) * np.sinh(r2)
+    F22 = (1 - 1j * np.sin(phi2) * np.sinh(r2) * (np.cosh(r2) + np.exp(1j * phi2) * np.sinh(r2))) / ((np.cosh(r2) + np.cos(phi2) * np.sinh(r2)) * (np.cosh(r2) + np.exp(1j * phi2) * np.sinh(r2)))
+    A = (-1/2)*(np.conj(F21)+F22)
+    B = 2*1j*p-1j*p01-1j*p02-np.conj(F21)*(x-x01)+F22*(x-x02)
+    C = -1j*p01*x+1j*p02*x-(1/2)*np.conj(F21)*(x-x01)**2-(1/2)*F22*(x-x02)**2
+    prefact = np.exp(1j*x01*p01/2)*np.exp(-1j*x02*p02/2)*math.pi**(-1/2)*(np.conj(F11)*F12)**(-1/2)
+    w = (1/math.pi)*prefact*np.sqrt(-math.pi/A)*np.exp(-B**2/(4*A)+C)
+    return w
+
+
+def cross_wigner_gaussian(alpha1, alpha2, xi1, xi2, rl, nr):
+    mx, mp = grid(rl, nr)
+    wij = cross_wigner_gaussian_xp(alpha1, alpha2, xi1, xi2, mx, mp)
+    return wij
+
+
+def overlap_gaussian(alpha1, alpha2, xi1, xi2):
+    #see https://doi.org/10.1103/PhysRevA.54.5378
+    #return <0|S(xi1)D(alpha1)D(alpha2)S(xi2)|0>
+    r1 = np.abs(xi1)
+    r2 = np.abs(xi2)
+    phi1 = np.angle(xi1)
+    phi2 = np.angle(xi2)
+    sigma21 = np.cosh(r1)*np.cosh(r2)-np.exp(1j*(phi2-phi1))*np.sinh(r1)*np.sinh(r2)
+    eta21 = (alpha2-alpha1)*np.cosh(r2)-(np.conj(alpha2)-np.conj(alpha1))*np.exp(1j*phi2)*np.sinh(r2)
+    eta12 = (alpha1-alpha2)*np.cosh(r1)-(np.conj(alpha1)-np.conj(alpha2))*np.exp(1j*phi1)*np.sinh(r1)
+    return np.exp((eta21*np.conj(eta12)/(2*sigma21))+(1/2)*(alpha2*np.conj(alpha1)-np.conj(alpha2)*alpha1))/np.sqrt(sigma21)
+
+def wigner_gaussian_superposition(alpha_list, xi_list, amplitude_list, rl, nr, sq=1, normalized=True):
+    w = np.zeros([nr, nr])
+    n = len(alpha_list)
+    norm = 0
+    for i in range(n):
+        ai = alpha_list[i]
+        xi = xi_list[i]
+        ci = amplitude_list[i]
+        w = w + np.abs(ci) ** 2 * cross_wigner_gaussian(ai, ai, xi, xi, rl, nr)
+        norm = norm + np.abs(ci)**2
+        for j in range(i+1, n):
+            aj = alpha_list[j]
+            xj = xi_list[j]
+            cj = amplitude_list[j]
+            w = w + 2*np.real(ci * np.conj(cj) * cross_wigner_gaussian(ai, aj, xi, xj, rl, nr))
+            norm = norm + 2*np.real(np.conj(cj)*ci*overlap_gaussian(ai, aj, xi, xj))
     w = np.real(w)
     if normalized:
         w = w/norm
