@@ -13,21 +13,21 @@ import random
 import qopy.state_space.bosonic_operators as bos
 import numpy as np
 import matplotlib.pyplot as plt
-
+from qopy.utils.grid import grid_square as grid
+import qopy.utils.polynomials as poly
 
 rl = 30
 nr = 1000
 
-N = 8
-alpha_list = 5*np.exp(2*np.pi*1j*np.arange(N)/N)
-xi_list = -1*np.exp(4*np.pi*1j*np.arange(N)/N)
-amp_list = np.ones(N)#np.exp(2*np.pi*1j*np.arange(N)/N)
+N = 4
+alist = 5*np.exp(2*np.pi*1j*np.arange(N)/N)
+xilist = 0*1*np.exp(4*np.pi*1j*np.arange(N)/N)
+nlist = 0*np.ones(N, dtype=int)
+clist = np.ones(N)
 
+w = wig.wigner_gaussian_fock_superposition(alist, xilist, nlist, clist, rl, nr)
 
-w = wig.wigner_gaussian_superposition(alpha_list, xi_list, amp_list, rl, nr)
-w24 = wig.wigner_fock(24, rl, nr)
+print('Norm: ', meas.integrate_2d(w, rl))
+print('Purity: ', meas.purity(np.abs(w), rl))
 
-print(meas.integrate_2d(w, rl))
-print(meas.purity(w, rl))
-
-wplot.plot_2d([w, w24, w-w24], rl)
+wplot.plot_2d(w, rl)

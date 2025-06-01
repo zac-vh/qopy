@@ -17,7 +17,7 @@ from qopy.utils.grid import grid_square as grid
 from qopy.utils.linalg import matrix_eigenvalues_eigenvectors
 from qopy.phase_space.wavefunction import ket_to_psi
 from qopy.phase_space.wavefunction import get_xl
-from numba import njit
+import qopy.utils.polynomials as poly
 
 
 def wigner_radial_fock(n, r):
@@ -227,7 +227,8 @@ def overlap_gaussian(alpha1, alpha2, xi1, xi2):
     eta12 = (alpha1-alpha2)*np.cosh(r1)-(np.conj(alpha1)-np.conj(alpha2))*np.exp(1j*phi1)*np.sinh(r1)
     return np.exp((eta21*np.conj(eta12)/(2*sigma21))+(1/2)*(alpha2*np.conj(alpha1)-np.conj(alpha2)*alpha1))/np.sqrt(sigma21)
 
-def wigner_gaussian_superposition(alpha_list, xi_list, amplitude_list, rl, nr, sq=1, normalized=True):
+
+def wigner_gaussian_superposition(alpha_list, xi_list, amplitude_list, rl, nr, normalized=True):
     w = np.zeros([nr, nr])
     n = len(alpha_list)
     norm = 0
@@ -243,6 +244,120 @@ def wigner_gaussian_superposition(alpha_list, xi_list, amplitude_list, rl, nr, s
             cj = amplitude_list[j]
             w = w + 2*np.real(ci * np.conj(cj) * cross_wigner_gaussian(ai, aj, xi, xj, rl, nr))
             norm = norm + 2*np.real(np.conj(cj)*ci*overlap_gaussian(ai, aj, xi, xj))
+    w = np.real(w)
+    if normalized:
+        w = w/norm
+    return w
+
+
+def cross_wigner_gaussian_fock_xp(alpha1, alpha2, xi1, xi2, n1, n2, x, p):
+    # References:
+    # Wave function of a displaced squeezed Fock state: https://doi.org/10.1016/S0375-9601(97)00183-7
+    # Integral of Hermite polynomials: https://doi.org/10.1016/j.aml.2012.02.043
+    # Overlap of displaced squeezed Fock states: https://doi.org/10.1103/PhysRevA.54.5378
+
+    x01 = np.sqrt(2)*np.real(alpha1)
+    p01 = np.sqrt(2)*np.imag(alpha1)
+    r1 = np.abs(xi1)
+    phi1 = np.angle(xi1)
+
+    F11 = np.cosh(r1)+np.exp(1j*phi1)*np.sinh(r1)
+    F21 = (1-1j*np.sin(phi1)*np.sinh(r1)*(np.cosh(r1)+np.exp(1j*phi1)*np.sinh(r1)))/((np.cosh(r1)+np.cos(phi1)*np.sinh(r1))*(np.cosh(r1)+np.exp(1j*phi1)*np.sinh(r1)))
+    F31 = (np.cosh(r1)+np.exp(-1j*phi1)*np.sin(phi1)*np.sinh(r1))/(np.cosh(r1)+np.exp(1j*phi1)*np.sin(phi1)*np.sinh(r1))
+    F41 = np.sqrt(np.cosh(r1)**2+np.sinh(r1)**2+2*np.cos(phi1)*np.cosh(r1)*np.sinh(r1))
+
+    x02 = np.sqrt(2)*np.real(alpha2)
+    p02 = np.sqrt(2)*np.imag(alpha2)
+    r2 = np.abs(xi2)
+    phi2 = np.angle(xi2)
+
+    F12 = np.cosh(r2)+np.exp(1j*phi2)*np.sinh(r2)
+    F22 = (1-1j*np.sin(phi2)*np.sinh(r2)*(np.cosh(r2)+np.exp(1j*phi2)*np.sinh(r2)))/((np.cosh(r2)+np.cos(phi2)*np.sinh(r2))*(np.cosh(r2)+np.exp(1j*phi2)*np.sinh(r2)))
+    F32 = (np.cosh(r2)+np.exp(-1j*phi2)*np.sin(phi2)*np.sinh(r2))/(np.cosh(r2)+np.exp(1j*phi2)*np.sin(phi2)*np.sinh(r2))
+    F42 = np.sqrt(np.cosh(r2)**2+np.sinh(r2)**2+2*np.cos(phi2)*np.cosh(r2)*np.sinh(r2))
+
+    A = (-1/2)*(np.conj(F21)+F22)
+    B = 2*1j*p-1j*p01-1j*p02-np.conj(F21)*(x-x01)+F22*(x-x02)
+    C = -1j*p01*x+1j*p02*x-(1/2)*np.conj(F21)*(x-x01)**2-(1/2)*F22*(x-x02)**2
+
+    f = -A
+    alpha = B
+    a = -2/F42
+    b = 2*(x-x02)/F42
+    c = 2/F41
+    d = 2*(x-x01)/F41
+
+    prefact = np.exp(1j*x01*p01/2)*np.exp(-1j*x02*p02/2)*math.pi **(-1/2)*(np.conj(F11)*F12)**(-1/2)*np.conj(F31)**(n1/2)*F32**(n2/2)*(2**(n1+n2)*scipy.special.factorial(n1)*scipy.special.factorial(n2))**(-1/2)*np.exp(C)
+    integral = np.sqrt(np.pi/f)*np.exp(alpha**2/(4*f))*poly.hermite_2index(n2, n1, b+a*alpha/(2*f), -1+a**2/(4*f), d+c*alpha/(2*f), -1+c**2/(4*f), a*c/(2*f))
+    return np.nan_to_num(prefact * integral / np.pi)
+
+
+def cross_wigner_gaussian_fock(alpha1, alpha2, xi1, xi2, n1, n2, rl, nr):
+    mx, mp = grid(rl, nr)
+    return cross_wigner_gaussian_fock_xp(alpha1, alpha2, xi1, xi2, n1, n2, mx, mp)
+
+
+def overlap_gaussian_fock(alpha1=0, alpha2=0, xi1=0, xi2=0, n1=0, n2=0):
+    # see https://doi.org/10.1103/PhysRevA.54.5378
+    # return <n1|S^dag(xi1)D^dag(alpha1)D(alpha2)S(xi2)|n2>
+
+    r1 = np.abs(xi1)
+    r2 = np.abs(xi2)
+    phi1 = np.angle(xi1)
+    phi2 = np.angle(xi2)
+
+    sigma21 = np.cosh(r2)*np.cosh(r1)-np.exp(1j*(phi2-phi1))*np.sinh(r2)*np.sinh(r1)
+    eta21 = (alpha2-alpha1)*np.cosh(r2)-(np.conj(alpha2)-np.conj(alpha1))*np.exp(1j*phi2)*np.sinh(r2)
+    eta12 = (alpha1-alpha2)*np.cosh(r1)-(np.conj(alpha1)-np.conj(alpha2))*np.exp(1j*phi1)*np.sinh(r1)
+    delta21 = np.exp(1j*phi1)*np.sinh(r1)*np.cosh(r2)-np.exp(1j*phi2)*np.sinh(r2)*np.cosh(r1)
+
+    # Handling Gaussian case
+    if n1 == 0 and n2 == 0:
+        return np.exp((eta21*np.conj(eta12)/(2*sigma21))+(1/2)*(alpha2*np.conj(alpha1)-np.conj(alpha2)*alpha1))/np.sqrt(sigma21)
+
+    # Handling the case eta12 = eta 12 = 0
+    if alpha1 == alpha2:
+        if (n1 % 2) != (n2 % 2):
+            return 0
+        res = 0
+        for l in range(n1 % 2, min(n1, n2)+1, 2):
+            j = (n1 - l) / 2
+            k = (n2 - l) / 2
+            res += np.sqrt(scipy.special.factorial(n1)*scipy.special.factorial(n2))/(scipy.special.factorial(j)*scipy.special.factorial(k)*scipy.special.factorial(l))*(-delta21*sigma21/2)**j*(np.conj(delta21)*sigma21/2)**k*sigma21**l
+        return res/np.sqrt(sigma21)
+
+    # General case
+    factj = -delta21*sigma21/(2*eta21**2)
+    factk = np.conj(delta21)*sigma21/(2*np.conj(eta12)**2)
+    factl = sigma21/(eta21*np.conj(eta12))
+    res = 0
+    for j in range(int(n1/2)+1):
+        for k in range(int(n2/2)+1):
+            m1 = n1-2*j
+            m2 = n2-2*k
+            for l in range(min(m1, m2)+1):
+                res += np.sqrt(scipy.special.factorial(n1)*scipy.special.factorial(n2))/(scipy.special.factorial(j)*scipy.special.factorial(k)*scipy.special.factorial(l)*scipy.special.factorial(m1-l)*scipy.special.factorial(m2-l))*factj**j*factk**k*factl**l
+    return res*np.exp(((eta21*np.conj(eta12)/(2*sigma21)))+(1/2)*(alpha2*np.conj(alpha1)-np.conj(alpha2)*alpha1))*(eta21/sigma21)**n1*(np.conj(eta12)/sigma21)**n2/np.sqrt(sigma21)
+
+
+def wigner_gaussian_fock_superposition(alpha_list, xi_list, n_list, amplitude_list, rl, nr, normalized=True):
+    w = np.zeros([nr, nr])
+    n = len(amplitude_list)
+    norm = 0
+    for i in range(n):
+        ai = alpha_list[i]
+        xi = xi_list[i]
+        ni = n_list[i]
+        ci = amplitude_list[i]
+        w = w + np.abs(ci) ** 2 * cross_wigner_gaussian_fock(ai, ai, xi, xi, ni, ni, rl, nr)
+        norm = norm + np.abs(ci)**2
+        for j in range(i+1, n):
+            aj = alpha_list[j]
+            xj = xi_list[j]
+            nj = n_list[j]
+            cj = amplitude_list[j]
+            w = w + 2*np.real(ci * np.conj(cj) * cross_wigner_gaussian_fock(ai, aj, xi, xj, ni, nj, rl, nr))
+            norm = norm + 2*np.real(np.conj(cj)*ci*overlap_gaussian_fock(ai, aj, xi, xj, ni, nj))
     w = np.real(w)
     if normalized:
         w = w/norm
