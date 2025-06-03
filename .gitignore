@@ -1,7 +1,20 @@
-notebooks/.DS_Store
+# ---- macOS ---------------------------------------------------
 .DS_Store
-.DS_Store
-notebooks/.DS_Store
-*.pyc
-*.pyc
-/.idea
+
+# ---- IDE / Editor files --------------------------------------
+.idea/
+
+# ---- Python bytecode -----------------------------------------
+__pycache__/
+*.py[cod]
+
+# ---- Jupyter -------------------------------------------------
+.ipynb_checkpoints/
+
+# ---- Build artefacts (wheel/sdist) ---------------------------
+build/
+dist/
+*.egg-info/
+
+# ---- Virtual env ---------------------------------------------
+.venv/
