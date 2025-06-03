@@ -1,46 +1,51 @@
 import numpy as np
 import scipy
-from qopy.state_space.density import trim_rho
+from qopy.state_space.density import trim
 
 
-def bs_transition_amplitude(i, k, n, eta=0.5):
-    #Return the transition amplitude of the beam-splitter: <i,k|U|n,i+k-n>
-    if (i < 0) or (k < 0) or (n < 0) or (i+k < n):
+def transition_amplitude(i, k, n, eta=0.5):
+    """
+    Return the transition amplitude of the beam splitter: ⟨i, k| U_BS |n, i+k−n⟩
+    where eta is the transmittance (0 ≤ eta ≤ 1).
+    """
+    if i < 0 or k < 0 or n < 0 or i + k < n:
         return 0
     if eta == 0:
-        if n == k:
-            return (-1)**k
-        else:
-            return 0
+        return (-1)**k if n == k else 0
     if eta == 1:
-        if i == n:
-            return 1
-        else:
-            return 0
+        return 1 if n == i else 0
+    t = eta
+    r = 1 - eta
+    factor = (-1)**i * np.sqrt(
+        r**(i + n) * t**(k - n) *
+        scipy.special.factorial(i + k - n) *
+        scipy.special.factorial(n) /
+        (scipy.special.factorial(i) * scipy.special.factorial(k))
+    )
+
     if k >= n:
-        res = scipy.special.comb(k, n, exact=True)*scipy.special.hyp2f1(-i, -n, 1+k-n, eta/(eta-1))
+        binom = scipy.special.comb(k, n, exact=True)
+        hyper = scipy.special.hyp2f1(-i, -n, 1 + k - n, t / (t - 1))
+        res = binom * hyper
     else:
-        res = scipy.special.comb(i, n-k, exact=True)*scipy.special.hyp2f1(-k, -i-k+n, 1-k+n, eta/(eta-1))*(eta/(eta-1))**(n-k)
-    return (-1)**i*np.sqrt((1-eta)**(i+n)*eta**(k-n)*math.factorial(i+k-n)*math.factorial(n)/(math.factorial(i)*math.factorial(k)))*res
+        binom = scipy.special.comb(i, n - k, exact=True)
+        z = t / (t - 1)
+        hyper = scipy.special.hyp2f1(-k, -i - k + n, 1 - k + n, z)
+        res = binom * hyper * z**(n - k)
 
-
-def tms_transition_amplitude(i, k, n, g=2):
-    # Amplitude of transition in a TMS
-    # tms_ikn = <n,m|Utms_lba|i,k> with n-m=i-kxs
-    b = bs_transition_amplitude(i, n + k - i, n, 1 / g) / np.sqrt(g)
-    return b
+    return factor * res
 
 
 def bs_output_1m(rho1, rho2, eta=0.5, mode=1):
     if mode == 1:
-        return bs_output_1m_mode1(rho1, rho2, eta)
+        return output_1m_mode1(rho1, rho2, eta)
     else:
-        return bs_output_1m_mode2(rho1, rho2, eta)
+        return output_1m_mode2(rho1, rho2, eta)
 
 
-def bs_output_1m_mode1(rho1, rho2, eta=0.5):
-    rho1 = trim_rho(rho1)
-    rho2 = trim_rho(rho2)
+def output_1m_mode1(rho1, rho2, eta=0.5):
+    rho1 = trim(rho1)
+    rho2 = trim(rho2)
     n1 = len(rho1)
     n2 = len(rho2)
     n = n1+n2-1
@@ -53,14 +58,14 @@ def bs_output_1m_mode1(rho1, rho2, eta=0.5):
                     for k in range(n1):
                         l = i+j-m+r-k
                         if 0 <= l <= (n2-1):
-                            rmr = rmr + rho1[i][k] * rho2[j][l] * bs_transition_amplitude(i, j, m, eta) * bs_transition_amplitude(k, l, r, eta)
+                            rmr = rmr + rho1[i][k] * rho2[j][l] * transition_amplitude(i, j, m, eta) * transition_amplitude(k, l, r, eta)
             rho[m][r] = rmr
     return rho
 
 
-def bs_output_1m_mode2(rho1, rho2, eta=0.5):
-    rho1 = trim_rho(rho1)
-    rho2 = trim_rho(rho2)
+def output_1m_mode2(rho1, rho2, eta=0.5):
+    rho1 = trim(rho1)
+    rho2 = trim(rho2)
     n1 = len(rho1)
     n2 = len(rho2)
     ntot = n1+n2-1
@@ -74,12 +79,12 @@ def bs_output_1m_mode2(rho1, rho2, eta=0.5):
                         l = i+j-n+s-k
                         if 0 <= l <= (n2-1):
                             t = i+j-n
-                            rns = rns + rho1[i][k] * rho2[j][l] * bs_transition_amplitude(i, j, t, eta) * bs_transition_amplitude(k, l, t, eta)
+                            rns = rns + rho1[i][k] * rho2[j][l] * transition_amplitude(i, j, t, eta) * transition_amplitude(k, l, t, eta)
             rho[n][s] = rns
     return rho
 
 
-def bs_output_2m_ket(ket_p, ket_q, eta=0.5):
+def output_2m_ket(ket_p, ket_q, eta=0.5):
     # Compute the 2m output of a BS fed by the kets |p> and |q>
     ket_p = np.trim_zeros(ket_p, 'b')
     ket_q = np.trim_zeros(ket_q, 'b')
@@ -99,12 +104,12 @@ def bs_output_2m_ket(ket_p, ket_q, eta=0.5):
                             l = r + s - k
                             if (0 <= j <= n_phot_q) and (0 <= l <= n_phot_q):
                                 rho_nmrs += ket_p[i] * ket_q[j] * np.conj(ket_p[k]) * np.conj(ket_q[l]) * \
-                                            bs_transition_amplitude(i, j, n, eta) * bs_transition_amplitude(k, l, r, eta)
+                                            transition_amplitude(i, j, n, eta) * transition_amplitude(k, l, r, eta)
                     rho[n][m][r][s] = rho_nmrs
     return rho
 
 
-def bs_unitary_2m(rho2m, eta=0.5):
+def unitary_2m(rho2m, eta=0.5):
     n_phot_mode_1 = np.shape(rho2m)[0] - 1
     n_phot_mode_2 = np.shape(rho2m)[1] - 1
     n_phot_max = n_phot_mode_1 + n_phot_mode_2
@@ -119,7 +124,7 @@ def bs_unitary_2m(rho2m, eta=0.5):
                             s = a + b - r
                             v = c + d - u
                             if (0 <= s <= n_phot_mode_2) and (0 <= v <= n_phot_mode_2):
-                                rho_abcd += rho2m[r][s][u][v] * bs_transition_amplitude(r, s, a, eta) * bs_transition_amplitude(u, v, c, eta)
+                                rho_abcd += rho2m[r][s][u][v] * transition_amplitude(r, s, a, eta) * transition_amplitude(u, v, c, eta)
                     rho_out[a][b][c][d] = rho_abcd
     return rho_out
 
@@ -127,5 +132,5 @@ def bs_unitary_2m(rho2m, eta=0.5):
 def sigma_mn(m, n, eta=0.5):
     out = np.zeros(m+n+1)
     for i in range(m+n+1):
-        out[i] = bs_transition_amplitude(m, n, i, eta) ** 2
+        out[i] = transition_amplitude(m, n, i, eta) ** 2
     return out

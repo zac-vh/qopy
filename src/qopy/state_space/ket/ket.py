@@ -8,21 +8,22 @@ Contains all the operation creating Ket vectors, or acting on ket vectors
 import numpy as np
 import math
 import scipy
-import random
+from random import random as random_01
 from qopy.state_space.density import displacement_matrix
 
-def ket_squeezed_vacuum(N, r, phi=0):
+
+def squeezed_vacuum(N, r, phi=0):
     ket = np.zeros(N, dtype=complex)
     nmax = int((N+1)/2)
     for n in range(nmax):
         ket[2*n] = (np.tanh(r)/2)**n*np.sqrt(float(math.factorial(2*n)))/math.factorial(n)
     ket = ket/np.sqrt(np.cosh(r))
     if phi != 0:
-        ket = rotate_ket(ket, phi)
+        ket = rotate(ket, phi)
     return ket
 
 
-def ket_coherent(alpha, N):
+def coherent(alpha, N):
     ket = np.zeros(N, dtype=complex)
     ket[0] = np.exp(-np.abs(alpha)**2/2)
     for n in range(1, N):
@@ -30,18 +31,14 @@ def ket_coherent(alpha, N):
     return ket
 
 
-def rotate_ket(ket, phi):
+def rotate(ket, phi):
     N = len(ket)
     for i in range(N):
         ket[i] = ket[i]*np.exp(-1j*phi*i)
     return ket
 
 
-def displace_ket(ket, d):
-    # d = sqrt(2)*alpha
-    if not (isinstance(d, list) or (isinstance(d, np.ndarray))):
-        d = [np.real(d), np.imag(d)]
-    alpha = (d[0]+1j*d[1])/np.sqrt(2)
+def displace(ket, alpha):
     N = len(ket)
     dispket = np.zeros(N, dtype=complex)
     for m in range(N):
@@ -52,8 +49,10 @@ def displace_ket(ket, d):
     return dispket
 
 
-def normalize_ket(ket, phased=True, length=None):
+def normalize(ket, phased=False, length=None):
     # Return a normalized ket
+    # If phase is True, then the first non-zero entry of ket is real positive
+    # If length=N, zeros are padded to ket in order to make it of length N
     if type(ket) is not np.array:
         ket = np.array(ket, dtype=complex)
     ket = ket.astype(complex) / np.sqrt(np.sum(np.abs(ket) ** 2))
@@ -69,7 +68,7 @@ def normalize_ket(ket, phased=True, length=None):
     return ket
 
 
-def random_ket(N):
+def random(N):
     if N == 1:
-        return np.array([np.exp(1j*random.random()*2*math.pi)])
+        return np.array([np.exp(1j*random_01()*2*math.pi)])
     return scipy.stats.unitary_group.rvs(N)[0]

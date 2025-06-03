@@ -5,7 +5,7 @@ from matplotlib.widgets import Slider
 from qopy.phase_space.measures import marginal
 
 
-def plot_2d(wlist, rl=None, titles=None, maxval=None, cmap='RdBu'):
+def grid_2d(wlist, rl=None, titles=None, maxval=None, cmap='RdBu'):
     if isinstance(wlist, np.ndarray) and wlist.ndim == 2:
         wlist = [wlist]
     N = len(wlist)
@@ -34,7 +34,7 @@ def plot_2d(wlist, rl=None, titles=None, maxval=None, cmap='RdBu'):
     plt.show()
 
 
-def plot_3d(wlist, rl=None, titles=None, maxval=None, cmap='viridis', stride=None):
+def grid_3d(wlist, rl=None, titles=None, maxval=None, cmap='viridis', stride=None):
     if isinstance(wlist, np.ndarray) and wlist.ndim == 2:
         wlist = [wlist]
 
@@ -77,7 +77,7 @@ def plot_3d(wlist, rl=None, titles=None, maxval=None, cmap='viridis', stride=Non
     plt.show()
 
 
-def plot_contour(wlist, rl=None, titles=None, levels=20, cmap='RdBu', linewidths=0.8):
+def grid_contour(wlist, rl=None, titles=None, levels=20, cmap='RdBu', linewidths=0.8):
     if isinstance(wlist, np.ndarray) and wlist.ndim == 2:
         wlist = [wlist]
 
@@ -111,7 +111,7 @@ def plot_contour(wlist, rl=None, titles=None, levels=20, cmap='RdBu', linewidths
     plt.show()
 
 
-def plot_lines(wlist, rl=None, titles=None, levels=20, colors='black', linewidths=1.0):
+def grid_lines(wlist, rl=None, titles=None, levels=20, colors='black', linewidths=1.0):
     """
     Plot one or more Wigner functions using contour lines only (no fill).
 
@@ -160,7 +160,7 @@ def plot_lines(wlist, rl=None, titles=None, levels=20, colors='black', linewidth
     plt.show()
 
 
-def plot_zero_contour(wlist, rl=None, titles=None, color='black', linewidth=1.5, linestyle='solid'):
+def grid_zero_contour(wlist, rl=None, titles=None, color='black', linewidth=1.5, linestyle='solid'):
     """
     Plot the zero-level contour (nodal line) of one or more Wigner functions.
 
@@ -209,7 +209,56 @@ def plot_zero_contour(wlist, rl=None, titles=None, color='black', linewidth=1.5,
     plt.show()
 
 
-def plot_marginal_with_slider(W, rl, adaptive_maxval=False):
+def grid_zero_contour(wlist, rl=None, titles=None, color='black', linewidth=1.5, linestyle='solid'):
+    """
+    Plot the zero-level contour (nodal line) of one or more Wigner functions.
+
+    Parameters
+    ----------
+    wlist : ndarray or list of ndarray
+        2D Wigner function(s) to plot.
+    rl : float, optional
+        Range limit for both x and p axes. Defaults to array size.
+    titles : list of str, optional
+        Titles for each subplot.
+    color : str
+        Color of the nodal lines.
+    linewidth : float
+        Thickness of the nodal line.
+    linestyle : str
+        Style of the contour line ('solid', 'dashed', etc.).
+    """
+    if isinstance(wlist, np.ndarray) and wlist.ndim == 2:
+        wlist = [wlist]
+
+    N = len(wlist)
+    nr = wlist[0].shape[0]
+    if rl is None:
+        rl = nr
+
+    mx, mp = grid(rl, nr)
+
+    fig, axs = plt.subplots(1, N, figsize=(5 * N, 4))
+    axs = np.atleast_1d(axs)
+
+    for i, w in enumerate(wlist):
+        ax = axs[i]
+        w_real = np.real(w)
+
+        # Trace uniquement la courbe W(x, p) = 0
+        ax.contour(mx, mp, w_real, levels=[0], colors=color, linewidths=linewidth, linestyles=linestyle)
+
+        ax.set_xlabel('$x$')
+        ax.set_ylabel('$p$')
+        ax.set_aspect('equal')  # très important pour la précision visuelle
+        if titles:
+            ax.set_title(titles[i])
+
+    plt.tight_layout()
+    plt.show()
+
+
+def grid_marginal(W, rl, adaptive_maxval=False):
     nr = W.shape[0]
     x = np.linspace(-rl / 2, rl / 2, nr)
     initial_theta = 0.0

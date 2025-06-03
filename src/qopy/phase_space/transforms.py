@@ -5,13 +5,12 @@ F(W) -> W
 '''
 
 import numpy as np
-import math
 import scipy
 from qopy.phase_space import measures
 
 
 def get_rl_fft(nr):
-    return np.sqrt(2 * math.pi / nr) * (nr - 1)
+    return np.sqrt(2 * np.pi / nr) * (nr - 1)
 
 
 def fft(w, rl, final_rescale=True):
@@ -21,11 +20,11 @@ def fft(w, rl, final_rescale=True):
     x = np.arange(0, nr)
     mx, mp = np.meshgrid(x, x)
     dx = rl/(nr-1)
-    phase = np.exp(1j*math.pi*rl*(mx+mp)/(dx*nr))
+    phase = np.exp(1j*np.pi*rl*(mx+mp)/(dx*nr))
     wf = phase*scipy.fft.fft2(w*phase)
-    wf = np.exp(-1j*math.pi*rl**2/(nr*dx**2))*wf
-    wf = 2*math.pi/(dx**2*nr**2)*wf
-    factor = 2 * math.pi / (dx ** 2 * nr)
+    wf = np.exp(-1j*np.pi*rl**2/(nr*dx**2))*wf
+    wf = 2*np.pi/(dx**2*nr**2)*wf
+    factor = 2 * np.pi / (dx ** 2 * nr)
     if final_rescale and factor != 1:
         wf = rescale(wf, factor)
         print('FFT rescaling: '+str(factor))
@@ -39,11 +38,11 @@ def ifft(w, rl, final_rescale=True):
     x = np.arange(0, nr)
     mx, mp = np.meshgrid(x, x)
     dx = rl/(nr-1)
-    phase = np.exp(-1j*math.pi*rl*(mx+mp)/(dx*nr))
+    phase = np.exp(-1j*np.pi*rl*(mx+mp)/(dx*nr))
     wf = phase*scipy.fft.ifft2(w*phase)*nr**2
-    wf = np.exp(1j*math.pi*rl**2/(nr*dx**2))*wf
-    wf = 2*math.pi/(dx**2*nr**2)*wf
-    factor = 2 * math.pi / (dx ** 2 * nr)
+    wf = np.exp(1j*np.pi*rl**2/(nr*dx**2))*wf
+    wf = 2*np.pi/(dx**2*nr**2)*wf
+    factor = 2 * np.pi / (dx ** 2 * nr)
     if final_rescale and factor != 1:
         wf = rescale(wf, factor)
         print('IFFT rescaling: '+str(factor))
@@ -74,7 +73,7 @@ def rescale(w, s, k=5):
     wc = w_interp_real(x / s, x / s)
     if np.iscomplexobj(w):
         w_interp_imag = scipy.interpolate.RectBivariateSpline(x, x, np.imag(w), kx=k, ky=k)
-        wc = wc + w_interp_imag(x / s, x / s) * 1j
+        wc += w_interp_imag(x / s, x / s) * 1j
     return wc/s**2
 
 
@@ -85,17 +84,17 @@ def squeeze(w, s, k=5):
     ws = w_interp_real(s * x, x / s)
     if np.iscomplexobj(w):
         w_interp_imag = scipy.interpolate.RectBivariateSpline(x, x, np.imag(w), kx=k, ky=k)
-        ws = ws + w_interp_imag(s * x, x / s) * 1j
+        ws += w_interp_imag(s * x, x / s) * 1j
     return ws
 
 
 def rotate(w, phi, k=5, pref=True):
-    phi = 180*phi/math.pi
+    phi = 180*phi/np.pi
     wr_real = scipy.ndimage.rotate(np.real(w), phi, reshape=False, order=k, mode='constant', cval=0.0, prefilter=pref)
     wr = wr_real
     if np.iscomplexobj(w):
         wr_imag = scipy.ndimage.rotate(np.imag(w), phi, reshape=False, order=k, mode='constant', cval=0.0, prefilter=pref)
-        wr = wr + wr_imag * 1j
+        wr += wr_imag * 1j
     return wr
 
 
@@ -108,7 +107,7 @@ def displace(w, d, rl, k=5):
     ws = w_interp_real(x - d[0], x - d[1])
     if np.iscomplexobj(w):
         w_interp_imag = scipy.interpolate.RectBivariateSpline(x, x, np.imag(w), kx=k, ky=k)
-        ws = ws + w_interp_imag(x - d[0], x - d[1]) * 1j
+        ws += w_interp_imag(x - d[0], x - d[1]) * 1j
     return ws
 
 
@@ -119,7 +118,7 @@ def minimize_energy_with_symplectic(w, rl):
     eigvals, eigvecs = np.linalg.eig(cov)
     theta = np.arccos(eigvecs[0][0])
     if eigvecs[1][0] < 0:
-        theta = math.pi - theta
+        theta = np.pi - theta
     w = rotate(w, -theta)
     cov = measures.covariance_matrix(w, rl)
     sq = (cov[0, 0]/cov[1, 1])**(1/4)
@@ -129,10 +128,7 @@ def minimize_energy_with_symplectic(w, rl):
 
 def gradient(w, rl):
     nr = len(w)
-    gw = np.gradient(w, rl / (nr - 1), edge_order=2)
-    #gwx = gw[0]
-    #gwp = gw[1]
-    return gw
+    return np.gradient(w, rl / (nr - 1), edge_order=2)
 
 
 def laplacian(w, rl, power=1):
@@ -140,10 +136,8 @@ def laplacian(w, rl, power=1):
         return w
     nr = len(w)
     gw = gradient(w, rl)
-    gwx = gw[0]
-    gwxx = gradient(gwx, rl)[0]
-    gwp = gw[1]
-    gwpp = gradient(gwp, rl)[1]
+    gwxx = gradient(gw[0], rl)[0]
+    gwpp = gradient(gw[1], rl)[1]
     wout = gwxx + gwpp
     return laplacian(wout, rl, power-1)
 

@@ -26,7 +26,7 @@ def matrix_eigenvectors(rho):
 
 
 def renyi_entropy_vector(vec, alpha):
-    # Compute the Rényi entropy of a vector
+    # Compute the Rényi entropy of a probability vector
     vec = vec.astype(float)
     vec = np.delete(vec, np.where(vec == 0))
     if alpha == 0:

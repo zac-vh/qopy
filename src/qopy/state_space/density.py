@@ -13,12 +13,12 @@ import random
 
 
 
-def rotate_rho(rho, phi):
+def rotate(rho, phi):
     rotmat = np.diag(np.exp(-1j*phi*np.arange(len(rho))))
     return rotmat @ rho @ np.conj(rotmat)
 
 
-def ket_to_rho(ket):
+def from_ket(ket):
     # Build rho from the vector ket
     ket = np.array(ket)
     if ket.size == 1:
@@ -35,7 +35,7 @@ def ket_to_rho(ket):
     return rho
 
 
-def trim_rho(rho, tol=0):
+def trim(rho, tol=0):
     n = len(rho)
     iszero = True
     for i in range(n - 1):
@@ -45,14 +45,14 @@ def trim_rho(rho, tol=0):
     if iszero:
         rho = rho[:n - 1, :n - 1]
         if len(rho) > 1:
-            rho = trim_rho(rho, tol)
+            rho = trim(rho, tol)
     return rho
 
 
 def random_pure(N):
     if N == 1:
         return np.array([[1]])
-    return ket_to_rho(random_unitary(N)[0])
+    return from_ket(random_unitary(N)[0])
 
 
 def random_mixed(N):
@@ -82,6 +82,6 @@ def displacement_matrix(m, n, alpha):
 
 def rho_bloch_sphere(theta, phi=0, p=1):
     ket = np.array([np.cos(theta/2), np.exp(1j*phi)*np.sin(theta/2)])
-    rho_pure = ket_to_rho(ket)
+    rho_pure = from_ket(ket)
     rho_mix = p*rho_pure+(1-p)*np.eye(2)/2
     return rho_mix

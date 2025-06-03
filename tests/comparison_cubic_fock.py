@@ -10,12 +10,12 @@ rl = 10 #size of phase-space area
 nr = 200 #number of points
 
 n = 4
-wfock = wig.wigner_fock(n, rl, nr)
+wfock = wig.fock(n, rl, nr)
 
 gamma = 0.5
 disp = (0, -2.5) #displacement ensuring the cubic-phase-state is centered around the origin
-sq = 1.5 #squeezing ensuring the cubic-phase-state is well contained within the grid
-wcubic = wig.wigner_cubic_phase(gamma, rl, nr, disp, sq)
+sq = 1.5 #squeezing ensuring the cubic-phase-state is well contained within the grid_square
+wcubic = wig.cubic_phase_state(gamma, rl, nr, disp, sq)
 
 print(meas.integrate_2d(wcubic, rl)) #checking that norm is 1
 print(meas.purity(wcubic, rl)) #checiking that purity is 1

@@ -22,7 +22,7 @@ areamax = 10000
 area = np.linspace(0, areamax, narea)
 
 n = 10
-area_fock = wig.wigner_area_fock(n, area)
+area_fock = wig.fock_area(n, area)
 
 plt.plot(area, area_fock)
 plt.show()
