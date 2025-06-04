@@ -1,0 +1,1 @@
+from .base import squeezed_vacuum
