@@ -111,6 +111,10 @@ def cubic_phase(gamma, x):
     return np.exp(1j*gamma*x**3)
 
 
+def ntic_phase(gamma, n, x, abs=False):
+    return np.exp(1j*gamma*n*np.abs(x)) if abs else np.exp(1j*gamma*x**n)
+
+
 def ket_to_psi(ket, x):
     n = len(ket)
     psi = np.zeros(x.shape, dtype=complex)

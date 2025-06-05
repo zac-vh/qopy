@@ -15,7 +15,7 @@ wfock = wig.fock(n, rl, nr)
 gamma = 0.5
 disp = (0, -2.5) #displacement ensuring the cubic-phase-state is centered around the origin
 sq = 1.5 #squeezing ensuring the cubic-phase-state is well contained within the grid_square
-wcubic = wig.cubic_phase_state(gamma, rl, nr, disp, sq)
+wcubic = wig.cubic_phase(gamma, rl, nr, disp, sq)
 
 print(meas.integrate_2d(wcubic, rl)) #checking that norm is 1
 print(meas.purity(wcubic, rl)) #checiking that purity is 1

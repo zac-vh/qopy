@@ -5,12 +5,12 @@ import qopy.phase_space.wigner as wig
 import qopy.phase_space.cross_wigner as xwig
 import qopy.state_space.ket as qket
 import qopy.state_space.density as qdens
-import qopy.plotting as qplt
+import qopy.plotting as wplt
 
 rl = 30
 nr = 500
 
-a = np.linspace(0, rl, nr)
+gamma = 1
 
-plt.plot(a, np.ones(nr))
-plt.show()
+w = wig.cubic_phase(gamma, rl, nr)
+wplt.grid_2d(w, rl)
