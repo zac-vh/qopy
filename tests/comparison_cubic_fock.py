@@ -1,6 +1,6 @@
 from qopy.phase_space import wigner as wig
 from qopy.phase_space import measures as meas
-from qopy.plotting import plotw
+from qopy.plotting import grid_2d
 from qopy.utils import majorization as maj
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,7 +20,7 @@ wcubic = wig.cubic_phase(gamma, rl, nr, disp, sq)
 print(meas.integrate_2d(wcubic, rl)) #checking that norm is 1
 print(meas.purity(wcubic, rl)) #checiking that purity is 1
 
-plotw([wfock, wcubic], rl) #checking that all the Wigner function is contained
+grid_2d([wfock, wcubic], rl) #checking that all the Wigner function is contained
 
 
 
