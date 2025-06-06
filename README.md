@@ -3,6 +3,6 @@
 ## Setup
 
 ```
-pip install https://github.com/zac-vh/qopy.git
+pip install git+https://github.com/zac-vh/qopy.git
 ```
 
