@@ -96,3 +96,47 @@ def level_function_less(w, interval, rl):
         wi = (w <= interval[i])
         flev[i] = wig_int(wi, rl) * dxdp
     return flev
+
+
+def relative_lorenz_decreasing(p, q):
+    # Compute the relative Lorenz decreasing curve of any type of distributions
+    # The input arrays are converted to vectors
+    p = p.ravel()
+    q = q.ravel()
+    idx = np.argsort(p/q)[::-1]
+    p_sorted, q_sorted = p[idx], q[idx]
+    p_cum = np.concatenate(([0.0], np.cumsum(p_sorted)))
+    q_cum = np.concatenate(([0.0], np.cumsum(q_sorted)))
+    return p_cum, q_cum
+
+
+def relative_lorenz_increasing(p, q):
+    # Compute the Lorenz decreasing curve of any type of distribution
+    # The input array is converted to a vector
+    p = p.ravel()
+    q = q.ravel()
+    idx = np.argsort(p/q)
+    p_sorted, q_sorted = p[idx], q[idx]
+    p_cum = np.concatenate(([0.0], np.cumsum(p_sorted)))
+    q_cum = np.concatenate(([0.0], np.cumsum(q_sorted)))
+    return p_cum, q_cum
+
+
+def relative_lorenz_decreasing_2d(w1, w2, rl):
+    # Compute the Lorenz decreasing curve of a (possibly multimode) phase-space function
+    nr = len(w1)
+    dim = len(w1.shape)
+    dx = (rl / (nr - 1))
+    vol = dx**dim
+    p, q = relative_lorenz_decreasing(w1, w2)
+    return p * vol, q * vol
+
+
+def relative_lorenz_increasing_2d(w1, w2, rl):
+    # Compute the Lorenz decreasing curve of a (possibly multimode) phase-space function
+    nr = len(w1)
+    dim = len(w1.shape)
+    dx = (rl / (nr - 1))
+    vol = dx**dim
+    p, q = relative_lorenz_increasing(w1, w2)
+    return p * vol, q * vol
