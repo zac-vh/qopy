@@ -8,8 +8,6 @@ import numpy as np
 import scipy
 import math
 import skimage
-import qopy.phase_space.transforms
-from qopy.phase_space.transforms import rotate
 
 
 def mean(w, rl):
@@ -48,7 +46,7 @@ def marginal(w, rl, theta=0):
         theta = np.pi/2
     nr = len(w)
     x = np.linspace(-rl / 2, rl / 2, nr)
-    w = qopy.phase_space.transforms.rotate(w, -theta)
+    w = scipy.ndimage.rotate(np.real(w), -theta, reshape=False, order=5, mode='constant', cval=0.0, prefilter=True)
     return scipy.integrate.simpson(w, x=x)
 
 

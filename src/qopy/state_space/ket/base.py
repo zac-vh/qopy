@@ -51,7 +51,7 @@ def displace(ket, alpha):
 
 def normalize(ket, phased=False, length=None):
     # Return a normalized ket
-    # If phase is True, then the first non-zero entry of ket is real positive
+    # If phased is True, then the first non-zero entry of ket is real positive
     # If length=N, zeros are padded to ket in order to make it of length N
     if type(ket) is not np.array:
         ket = np.array(ket, dtype=complex)

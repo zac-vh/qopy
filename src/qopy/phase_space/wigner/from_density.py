@@ -4,7 +4,7 @@ import qopy.phase_space.cross_wigner as xwig
 from qopy.phase_space.wavefunction import ket_to_psi, get_xl
 from qopy.utils.linalg import matrix_eigenvalues_eigenvectors
 
-def via_cross_wigner(rho, rl, nr, isherm=True):
+def direct(rho, rl, nr, isherm=True):
     n = rho.shape[0]
     w = np.zeros((nr, nr), dtype=complex)
     for i in range(n):
@@ -23,7 +23,7 @@ def via_cross_wigner(rho, rl, nr, isherm=True):
     return np.real(w) if isherm else w
 
 
-def via_set(rho, wijset, isherm=True):
+def cached(rho, wijset, isherm=True):
     # Build the Wigner function of the density matrix rho (in wij_set basis)
     n = rho.shape[0]
     w = np.zeros(wijset.shape[2:], dtype=complex)
@@ -46,7 +46,7 @@ def via_set(rho, wijset, isherm=True):
     return w
 
 
-def via_psi(rho, rl, nr):
+def psi(rho, rl, nr):
     # Compute the Wigner function from the wavefunction of the eigenvectors of rho
     # More efficient when N >> 1
     xl = get_xl(rl, nr)
