@@ -7,6 +7,7 @@ F(W) -> W
 import numpy as np
 import scipy
 from qopy.phase_space import measures
+from qopy.phase_space.wigner import fock
 
 
 def get_rl_fft(nr):
@@ -166,3 +167,29 @@ def average_negative_volume(w, rl):
         if vneg == 0:
             break
     return wpos
+
+
+def beam_splitter_mixing(w1, w2, rl, eta):
+    if eta == 1:
+        return w1
+    if eta == 0:
+        return w2
+    w1_resc = rescale(w1, np.sqrt(eta))
+    w2_resc = rescale(w2, np.sqrt(1-eta))
+    return convolve(w1_resc, w2_resc, rl)
+
+
+def two_mode_squeezer_mixing(w1, w2, rl, g):
+    if g == 1:
+        return w1
+    w1_resc = rescale(w1, np.sqrt(g))
+    w2_resc = rescale(np.flip(w2, axis=1), np.sqrt(g-1))
+    return convolve(w1_resc, w2_resc, rl)
+
+
+def pure_loss(w, rl, eta):
+    if eta == 1:
+        return w
+    nr = len(w)
+    w0 = fock(0, rl, nr)
+    return beam_splitter_mixing(w, w0, rl, eta)
