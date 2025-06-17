@@ -5,7 +5,6 @@ Contains all the functions creating density operators, or acting on density oper
 '''
 
 
-
 import numpy as np
 import math
 import scipy

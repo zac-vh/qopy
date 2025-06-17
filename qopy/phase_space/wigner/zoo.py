@@ -52,3 +52,15 @@ def cubic_phase(gamma, rl, nr, disp=(0, 0), sq=1):
     airy = scipy.special.airy((4/(3*gamma))**(1/3)*(3*gamma*mx**2-mp+1/(12*gamma)))[0]
     wcubic = mgamma*np.exp(-mp/(3*gamma))*airy
     return wcubic
+
+
+def binomial(n, rl, nr):
+    mx, mp = grid_square(rl, nr)
+    return np.exp(-mx**2-mp**2)*(mx**2+mp**2)**n/scipy.special.factorial(n)
+
+
+def extreme_passive(n, rl, nr):
+    w = np.zeros([nr, nr])
+    for k in range(n + 1):
+        w += wig.fock(k, rl, nr)
+    return w / (n + 1)

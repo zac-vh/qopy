@@ -21,7 +21,7 @@ def fock_area(n, a):
 def fock(n, rl, nr):
     # Wigner function of the nth Fock states
     # The Wigner function is a matrix (nr x nr) defined over [-rl/2, rl/2]x[-rl/2, rl/2]
-    return phase_space.cross_wigner.fock.grid(n, n, rl, nr)
+    return xwig.fock.grid(n, n, rl, nr)
 
 
 def fock_fn(n):
@@ -31,11 +31,11 @@ def fock_fn(n):
         return (-1) ** n * (1 / np.pi) * np.exp(-r2) * lag(2 * r2)
 
 def gaussian(alpha, xi, rl, nr):
-    return np.real(phase_space.cross_wigner.gaussian.grid(alpha, alpha, xi, xi, rl, nr))
+    return np.real(xwig.gaussian.grid(alpha, alpha, xi, xi, rl, nr))
 
 
 def gaussian_fock(alpha, xi, n, rl, nr):
-    return np.real(phase_space.cross_wigner.gaussian_fock.grid(alpha, alpha, xi, xi, n, n, rl, nr))
+    return np.real(xwig.gaussian_fock.grid(alpha, alpha, xi, xi, n, n, rl, nr))
 
 
 def gaussian_via_covariance_matrix(rl, nr, alpha=0, covmat=np.eye(2) / 2):

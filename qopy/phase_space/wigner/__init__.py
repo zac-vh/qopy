@@ -1,5 +1,6 @@
 from . import (
     superposition,
+    from_density,
 )
 
 
