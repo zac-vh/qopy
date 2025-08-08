@@ -1,5 +1,4 @@
-# Welcome to the Wigner zoo:
-# List of exotic Wigner functions
+# The Wigner zoo: list of various Wigner functions
 
 import numpy as np
 import scipy
@@ -54,7 +53,7 @@ def cubic_phase(gamma, rl, nr, disp=(0, 0), sq=1):
     return wcubic
 
 
-def binomial(n, rl, nr):
+def binomial_radial(n, rl, nr):
     mx, mp = grid_square(rl, nr)
     return np.exp(-mx**2-mp**2)*(mx**2+mp**2)**n/scipy.special.factorial(n)
 

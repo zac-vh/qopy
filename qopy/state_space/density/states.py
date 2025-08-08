@@ -1,13 +1,13 @@
 import numpy as np
 import scipy
-from qopy.state_space.gaussian_unitary.beamsplitter import sigma_mn
+from qopy.state_space.gaussian_unitary.beamsplitter import transition_amplitude
 
 
-def beam_splitter(m, n):
+def beam_splitter(m, n, eta=0.5):
     N = m+n+1
     eigvals = np.zeros(N)
     for k in range(N):
-        eigvals[k] = sigma_mn(m, n)
+        eigvals[k] = transition_amplitude(m, n, k, eta) ** 2
     return np.diag(eigvals)
 
 

@@ -12,11 +12,11 @@ def fock_cross_husimi(i, j, rl, nr, hbar=1):
     return hij/fact
 
 
-def fock_husimi(n, rl, nr, hbar=1):
+def fock(n, rl, nr, hbar=1):
     return np.real(fock_cross_husimi(n, n, rl, nr, hbar))
 
 
-def density_to_husimi(rho, rl, nr, isherm=True, hbar=1):
+def from_density(rho, rl, nr, isherm=True, hbar=1):
     # Build the Husimi function of the density matrix rho
     n = len(rho)
     h = np.zeros([nr, nr])

@@ -1,6 +1,6 @@
 import numpy as np
 import scipy
-from qopy.state_space.density import trim
+from qopy.state_space.density.base import trim
 
 
 def transition_amplitude(i, k, n, eta=0.5):

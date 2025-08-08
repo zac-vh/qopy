@@ -1,5 +1,6 @@
 import numpy as np
 import qopy.phase_space.wigner as wig
+import qopy.phase_space.cross_wigner as xwig
 from qopy.phase_space.wavefunction import ket_to_psi, get_xl
 from qopy.utils.linalg import matrix_eigenvalues_eigenvectors
 
@@ -11,7 +12,7 @@ def direct(rho, rl, nr, isherm=True):
             rij = rho[i, j]
             if rij == 0:
                 continue
-            wij = phase_space.cross_wigner.fock.grid(i, j, rl, nr)
+            wij = xwig.fock.grid(i, j, rl, nr)
             if isherm:
                 if i != j:
                     w += 2*np.real(rij * wij)

@@ -5,10 +5,6 @@ from . import (
 
 
 from .base import (
-    fock_radial,
-    fock_area,
-    fock,
-    fock_fn,
     gaussian,
     gaussian_fock,
     gaussian_via_covariance_matrix,
@@ -20,4 +16,8 @@ from .zoo import (
     particle_in_a_box,
     cubic_phase,
     gkp,
+)
+
+from .fock import (
+    grid,
 )

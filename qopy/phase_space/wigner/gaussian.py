@@ -1,17 +1,16 @@
 import numpy as np
-import scipy
 import qopy.phase_space.cross_wigner as xwig
 
 
-def gaussian(alpha, xi, rl, nr):
+def grid(alpha, xi, rl, nr):
     return np.real(xwig.gaussian.grid(alpha, alpha, xi, xi, rl, nr))
 
 
-def gaussian_fock(alpha, xi, n, rl, nr):
+def grid_fock(alpha, xi, n, rl, nr):
     return np.real(xwig.gaussian_fock.grid(alpha, alpha, xi, xi, n, n, rl, nr))
 
 
-def gaussian_via_covariance_matrix(rl, nr, alpha=0, covmat=np.eye(2) / 2):
+def grid_from_covariance_matrix(rl, nr, alpha=0, covmat=np.eye(2) / 2):
     # Wigner function of a Gaussian state with mean d and covariance matrix gamma
     if not (isinstance(alpha, list) or (isinstance(alpha, np.ndarray)) or (isinstance(alpha, tuple))):
         d = np.sqrt(2)*np.array([np.real(alpha), np.imag(alpha)])
@@ -24,9 +23,3 @@ def gaussian_via_covariance_matrix(rl, nr, alpha=0, covmat=np.eye(2) / 2):
     a = g11 * (mx - dx) ** 2 + (g21 + g12) * (mx - dx) * (my - dy) + g22 * (my - dy) ** 2
     w = np.exp(-a / 2) / (2 * np.pi * np.sqrt(np.linalg.det(covmat)))
     return w
-
-
-def from_psi(psi, rl, nr):
-    # Wigner function of the wave-function psi
-    # psi should be sampled on xl (see get_xl)
-    return np.real(xwig.from_psi(psi, psi, rl, nr))

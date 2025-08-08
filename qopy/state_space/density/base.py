@@ -35,16 +35,15 @@ def from_ket(ket):
 
 
 def trim(rho, tol=0):
-    n = len(rho)
-    iszero = True
-    for i in range(n - 1):
-        iszero = (iszero and (np.abs(rho[n - 1][i])) <= tol)
-        iszero = (iszero and (np.abs(rho[i][n - 1])) <= tol)
-    iszero = (iszero and (np.abs(rho[n - 1][n - 1])) <= tol)
-    if iszero:
-        rho = rho[:n - 1, :n - 1]
-        if len(rho) > 1:
-            rho = trim(rho, tol)
+    rho = np.asarray(rho)
+    while rho.shape[0] > 1:
+        last = rho.shape[0] - 1
+        row = np.abs(rho[last, :])
+        col = np.abs(rho[:, last])
+        if np.all(row <= tol) and np.all(col <= tol):
+            rho = rho[:last, :last]
+        else:
+            break
     return rho
 
 

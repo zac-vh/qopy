@@ -19,7 +19,7 @@ def fn_xp(i, j, x, p):
         return w
     if i > j:
         m, n = j, i
-        w = (1 / scipy.special.pi) * np.exp(-r ** 2) * (-1) ** m * np.sqrt(2) ** (n - m) \
+        w = (1 / np.pi) * np.exp(-r ** 2) * (-1) ** m * np.sqrt(2) ** (n - m) \
             * np.sqrt(scipy.special.factorial(m) / scipy.special.factorial(n)) * \
             (x - 1j * p) ** (n - m) * scipy.special.genlaguerre(m, n - m)(2 * r ** 2)
         return w

@@ -284,7 +284,7 @@ def grid_marginal(W, rl, adaptive_maxval=False):
 
     # Slider
     ax_theta = plt.axes([0.2, 0.1, 0.65, 0.03])
-    slider_theta = Slider(ax_theta, 'θ (deg)', 0, 180, valinit=initial_theta)
+    slider_theta = Slider(ax_theta, '$\\theta\\ \mathrm{(deg)}$', 0, 180, valinit=initial_theta)
 
     # Update function
     def update(val):
