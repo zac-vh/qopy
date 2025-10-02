@@ -1,5 +1,9 @@
 from . import (
-   measures,
-   ket,
+   beamsplitter,
+   bosonic_operators,
+   channels,
    density,
+   ket,
+   measures,
+   multimode,
 )

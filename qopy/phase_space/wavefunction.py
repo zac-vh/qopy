@@ -2,16 +2,17 @@ import numpy as np
 import math
 import scipy
 from qopy.utils.polynomials import hermite
+from qopy.phase_space import cross_wigner as xwig
 
 
-def psi_fock(n, x):
+def fock(n, x):
     # Wave-function of the nth Fock state
     p = np.append(np.zeros(n), 1)
     f = np.multiply(np.exp(-x ** 2 / 2), np.polynomial.hermite.hermval(x, p)) / (math.pi ** (1 / 4) * 2 ** (n / 2) * math.sqrt(scipy.special.factorial(n)))
     return f
 
 
-def psi_bump(xl, dr=1, pwr=1):
+def bump(xl, dr=1, pwr=1):
     fx = np.zeros_like(xl)
     dom = np.abs(xl) < (dr/2)
     fx[dom] = np.exp(-pwr*dr**2/(dr**2-(2*xl[dom])**2))
@@ -20,7 +21,7 @@ def psi_bump(xl, dr=1, pwr=1):
     return fx/np.sqrt(norm)
 
 
-def psi_gaussian(x, alpha=0, rsq=0, phi=0):
+def gaussian(x, alpha=0, rsq=0, phi=0):
     # Wave-function of a squeezed coherent state
     # Squeezing is performed with an angle of phi with respect to x-axis, then displaced
     # If alpha is a a tuple: alpha = (Re[alpha]+iIm[alpha])/sqrt(2)
@@ -41,7 +42,7 @@ def psi_gaussian(x, alpha=0, rsq=0, phi=0):
     return fx
 
 
-def psi_gaussian_fock(x, alpha=0, xi=0, n=0):
+def gaussian_fock(x, alpha=0, xi=0, n=0):
     # Compute the wave function of a displaced squeezed Fock state, i.e. psi(x) = <x|D(alpha)S(xi)|n>
     # alpha and xi are complex-valued
     # see https://arxiv.org/abs/quant-ph/9612050v1
@@ -56,12 +57,16 @@ def psi_gaussian_fock(x, alpha=0, xi=0, n=0):
     return math.pi**(-1/4)*np.exp(-1j*x0*p0/2)*F1**(-1/2)*np.exp(-((x-x0)**2/2)*F2+1j*p0*x)*(F3**(n/2))*(2**n*math.factorial(n))**(-1/2)*hermite(n, (x - x0) / F4)
 
 
-def integrate_1d(psi, xl):
-    return scipy.integrate.simpson(psi, x=xl)
+def cubic_phase(gamma, x):
+    return np.exp(1j*gamma*x**3)
 
 
-def normalize_psi(psi, xl):
-    norm = integrate_1d(np.abs(psi) ** 2, xl)
+def ntic_phase(gamma, n, x, abs=False):
+    return np.exp(1j*gamma*n*np.abs(x)) if abs else np.exp(1j*gamma*x**n)
+
+
+def normalize(psi, xl):
+    norm = scipy.integrate.simpson(np.abs(psi) ** 2, x=xl)
     return psi/np.sqrt(norm)
 
 
@@ -73,58 +78,20 @@ def get_xl(rl, nr):
     return xl
 
 
-def shannon_entropy_1d(rx, rl):
-    # Compute the Shannon entropy (or Rényi entropy) of the density function rx
-    nr = len(rx)
-    x = np.linspace(-rl / 2, rl / 2, nr)
-    rxlog = np.zeros(nr)
-    rxlog[np.nonzero(rx)] = np.log(np.abs(rx[np.nonzero(rx)]))
-    return - scipy.integrate.simpson(rx * rxlog, x=x)
-
-def renyi_entropy_1d(rx, rl, alpha):
-    nr = len(rx)
-    x = np.linspace(-rl / 2, rl / 2, nr)
-    if alpha == 1:
-        return shannon_entropy_1d(rx, rl)
-    if math.isinf(alpha):
-        m = np.max(np.abs(rx))
-        return -np.log(m)
-    if alpha == 0:
-        rxa = (np.abs(rx) > 0)
-        return np.log(scipy.integrate.simpson(rxa, x=x))
-    rxa = np.abs(rx) ** alpha
-    return (1 / (1 - alpha)) * np.log(scipy.integrate.simpson(rxa, x=x))
-
-
-def fourier_transform_1d(fx, xl):
-    nrl = len(xl)
-    phi = np.zeros(nrl, dtype=complex)
-    for i in range(nrl):
-        pi = xl[i]
-        re = scipy.integrate.simpson(np.real(fx*np.exp(-1j*pi*xl)), x=xl)/np.sqrt(2*math.pi)
-        im = scipy.integrate.simpson(np.imag(fx*np.exp(-1j*pi*xl)), x=xl)/np.sqrt(2*math.pi)
-        phi[i] = re + im * 1j
-    return phi
-
-
-def cubic_phase(gamma, x):
-    return np.exp(1j*gamma*x**3)
-
-
-def ntic_phase(gamma, n, x, abs=False):
-    return np.exp(1j*gamma*n*np.abs(x)) if abs else np.exp(1j*gamma*x**n)
-
-
 def ket_to_psi(ket, x):
     n = len(ket)
     psi = np.zeros(x.shape, dtype=complex)
     for i in range(n):
-        psi += ket[i]*psi_fock(i, x)
+        psi += ket[i] * fock(i, x)
     return psi
 
 
 def psi_to_ket(psi, xl, N):
     ket = np.zeros(N, dtype=complex)
     for i in range(N):
-        ket[i] = integrate_1d(psi*psi_fock(i, xl), xl)
+        ket[i] = scipy.integrate.simpson(psi * fock(i, xl), x=xl)
     return ket
+
+
+def psi_to_wig(psi, rl, nr):
+    return np.real(xwig.from_psi(psi, psi, rl, nr))

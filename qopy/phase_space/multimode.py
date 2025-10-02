@@ -1,19 +1,19 @@
 import numpy as np
 import scipy
 
-def phase_distribution_tensor(w1, w2):
+def wigner_tensor(w1, w2):
     # use the convention to use order W(x_1,p_1,x_2,p_2)=W(x_1,p_1)W(x_2,p_2)
     return np.tensordot(w1, w2, axes=0)
 
 
-def phase_distribution_integrate_2mode(W, rl):
+def wigner_integrate_2mode(W, rl):
     # Integrate the 2-mode Wigner function
     nr = len(W)
     x = np.linspace(-rl / 2, rl / 2, nr)
     return scipy.integrate.simpson(scipy.integrate.simpson(scipy.integrate.simpson(scipy.integrate.simpson(W, x), x=x), x=x), x=x)
 
 
-def phase_distribution_partial_trace(W, rl, mode=2):
+def wigner_partial_trace(W, rl, mode=2):
     nr = len(W)
     x = np.linspace(-rl/2, rl/2, nr)
     if mode==2:

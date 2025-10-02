@@ -3,7 +3,7 @@ import math
 import scipy
 from random import random as random_01
 from qopy.state_space.density import displacement_matrix
-
+from qopy.state_space.density import from_ket
 
 def squeezed_vacuum(N, r, phi=0):
     ket = np.zeros(N, dtype=complex)
@@ -65,3 +65,7 @@ def normalize(ket, phased=False, length=None):
     if length is not None:
         ket = np.concatenate([ket, np.zeros(length-len(ket))])
     return ket
+
+
+def to_rho(ket):
+    return from_ket(ket)
