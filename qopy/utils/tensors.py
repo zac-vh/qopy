@@ -1,8 +1,5 @@
 import numpy as np
-import scipy
-
-
 
 
 def tensor(A, B):
-    return np.tensordot(A, B, axes=0)
+    return np.outer(A, B)
