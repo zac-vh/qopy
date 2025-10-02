@@ -1,6 +1,6 @@
 import numpy as np
 import scipy
-from qopy.state_space.density.base import trim
+from state_space.density import trim
 
 
 def transition_amplitude(i, k, n, eta=0.5):
@@ -36,7 +36,13 @@ def transition_amplitude(i, k, n, eta=0.5):
     return factor * res
 
 
-def bs_output_1m(rho1, rho2, eta=0.5, mode=1):
+def tms_transition_amplitude(i, k, n, g=2):
+    # Amplitude of transition in a TMS
+    # tms_ikn = <n,m|Utms_lba|i,k> with n-m=i-kxs
+    return transition_amplitude(i, n + k - i, n, 1 / g) / np.sqrt(g)
+
+
+def output_1m(rho1, rho2, eta=0.5, mode=1):
     if mode == 1:
         return output_1m_mode1(rho1, rho2, eta)
     else:

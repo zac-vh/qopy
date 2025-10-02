@@ -1,10 +1,42 @@
-# The Wigner zoo: list of various Wigner functions
-
 import numpy as np
-import scipy
-import qopy.phase_space.wigner as wig
+import qopy.phase_space.cross_wigner as xwig
 from qopy.utils.grid import grid_square
 import mpmath
+import scipy
+
+def fock(n, rl, nr):
+    # Wigner function of the nth Fock states
+    # The Wigner function is a matrix (nr x nr) defined over [-rl/2, rl/2]x[-rl/2, rl/2]
+    return np.real(xwig.fock(n, n, rl, nr))
+
+
+def gaussian(alpha, xi, rl, nr):
+    return np.real(xwig.gaussian(alpha, alpha, xi, xi, rl, nr))
+
+
+def gaussian_fock(alpha, xi, n, rl, nr):
+    return np.real(xwig.gaussian_fock(alpha, alpha, xi, xi, n, n, rl, nr))
+
+
+def gaussian_via_covariance_matrix(rl, nr, alpha=0, covmat=np.eye(2) / 2):
+    # Wigner function of a Gaussian state with mean d and covariance matrix gamma
+    if not (isinstance(alpha, list) or (isinstance(alpha, np.ndarray)) or (isinstance(alpha, tuple))):
+        d = np.sqrt(2)*np.array([np.real(alpha), np.imag(alpha)])
+    else:
+        d = alpha
+    [g11, g12], [g21, g22] = np.linalg.inv(covmat)
+    dx, dy = d
+    x = np.linspace(-rl / 2, rl / 2, nr)
+    [mx, my] = np.meshgrid(x, x, indexing='ij')
+    a = g11 * (mx - dx) ** 2 + (g21 + g12) * (mx - dx) * (my - dy) + g22 * (my - dy) ** 2
+    w = np.exp(-a / 2) / (2 * np.pi * np.sqrt(np.linalg.det(covmat)))
+    return w
+
+
+def from_psi(psi, rl, nr):
+    # Wigner function of the wave-function psi
+    # psi should be sampled on xl (see get_xl)
+    return np.real(xwig.from_psi(psi, psi, rl, nr))
 
 
 def gkp(s, rl, nr):
@@ -43,7 +75,7 @@ def cubic_phase(gamma, rl, nr, disp=(0, 0), sq=1):
     # The phase is exp(i*gamma*x^3)
     # See https://doi.org/10.1103/PhysRevA.100.013831
     if gamma == 0:
-        return wig.fock(0, rl, nr)
+        return fock(0, rl, nr)
     mx, mp = grid_square(rl, nr)
     mx = (mx-disp[0])/sq
     mp = (mp-disp[1])*sq
@@ -51,15 +83,3 @@ def cubic_phase(gamma, rl, nr, disp=(0, 0), sq=1):
     airy = scipy.special.airy((4/(3*gamma))**(1/3)*(3*gamma*mx**2-mp+1/(12*gamma)))[0]
     wcubic = mgamma*np.exp(-mp/(3*gamma))*airy
     return wcubic
-
-
-def binomial_radial(n, rl, nr):
-    mx, mp = grid_square(rl, nr)
-    return np.exp(-mx**2-mp**2)*(mx**2+mp**2)**n/scipy.special.factorial(n)
-
-
-def extreme_passive(n, rl, nr):
-    w = np.zeros([nr, nr])
-    for k in range(n + 1):
-        w += wig.fock(k, rl, nr)
-    return w / (n + 1)

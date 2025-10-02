@@ -1,15 +1,8 @@
-'''
-
-Contains all the functions creating density operators, or acting on density operators
-
-'''
-
-
 import numpy as np
 import math
 import scipy
 import random
-
+from state_space.beamsplitter import transition_amplitude
 
 
 def rotate(rho, phi):
@@ -83,3 +76,11 @@ def rho_bloch_sphere(theta, phi=0, p=1):
     rho_pure = from_ket(ket)
     rho_mix = p*rho_pure+(1-p)*np.eye(2)/2
     return rho_mix
+
+
+def beam_splitter(m, n, eta=0.5):
+    N = m+n+1
+    eigvals = np.zeros(N)
+    for k in range(N):
+        eigvals[k] = transition_amplitude(m, n, k, eta) ** 2
+    return np.diag(eigvals)

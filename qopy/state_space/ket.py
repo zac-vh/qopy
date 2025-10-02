@@ -1,10 +1,3 @@
-'''
-
-Contains all the operation creating Ket vectors, or acting on ket vectors
-
-'''
-
-
 import numpy as np
 import math
 import scipy
@@ -29,6 +22,12 @@ def coherent(alpha, N):
     for n in range(1, N):
         ket[n] = ket[n-1]*alpha/np.sqrt(n)
     return ket
+
+
+def random(N):
+    if N == 1:
+        return np.array([np.exp(1j*random_01()*2*math.pi)])
+    return scipy.stats.unitary_group.rvs(N)[0]
 
 
 def rotate(ket, phi):
@@ -66,9 +65,3 @@ def normalize(ket, phased=False, length=None):
     if length is not None:
         ket = np.concatenate([ket, np.zeros(length-len(ket))])
     return ket
-
-
-def random(N):
-    if N == 1:
-        return np.array([np.exp(1j*random_01()*2*math.pi)])
-    return scipy.stats.unitary_group.rvs(N)[0]
