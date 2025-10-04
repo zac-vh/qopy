@@ -5,11 +5,6 @@ import random
 from qopy.state_space.beamsplitter import transition_amplitude
 
 
-def rotate(rho, phi):
-    rotmat = np.diag(np.exp(-1j*phi*np.arange(len(rho))))
-    return rotmat @ rho @ np.conj(rotmat)
-
-
 def from_ket(ket):
     # Build rho from the vector ket
     ket = np.array(ket)
@@ -24,19 +19,6 @@ def from_ket(ket):
             rij = ket[i] * np.conj(ket[j])
             rho[i][j] = rij
             rho[j][i] = np.conj(rij)
-    return rho
-
-
-def trim(rho, tol=0):
-    rho = np.asarray(rho)
-    while rho.shape[0] > 1:
-        last = rho.shape[0] - 1
-        row = np.abs(rho[last, :])
-        col = np.abs(rho[:, last])
-        if np.all(row <= tol) and np.all(col <= tol):
-            rho = rho[:last, :last]
-        else:
-            break
     return rho
 
 
@@ -56,22 +38,7 @@ def random_mixed(N):
     return rho
 
 
-def random_unitary(N):
-    if N == 1:
-        return np.array([np.exp(1j*random.random()*2*math.pi)])
-    return scipy.stats.unitary_group.rvs(N)
-
-
-def displacement_matrix(m, n, alpha):
-    # return the value of <m|D(alpha)|n>
-    dmn = 0
-    for p in range(np.min([m, n])+1):
-        dmn = dmn + np.sqrt(float(math.factorial(m)*math.factorial(n)))*(-1)**(n-p)/(math.factorial(p)*math.factorial(m-p)*math.factorial(n-p))*alpha**(m-p)*np.conj(alpha)**(n-p)
-    dmn = np.exp(-(1/2)*np.abs(alpha)**2)*dmn
-    return dmn
-
-
-def rho_bloch_sphere(theta, phi=0, p=1):
+def bloch_sphere(theta, phi=0, p=1):
     ket = np.array([np.cos(theta/2), np.exp(1j*phi)*np.sin(theta/2)])
     rho_pure = from_ket(ket)
     rho_mix = p*rho_pure+(1-p)*np.eye(2)/2
@@ -84,3 +51,25 @@ def beam_splitter(m, n, eta=0.5):
     for k in range(N):
         eigvals[k] = transition_amplitude(m, n, k, eta) ** 2
     return np.diag(eigvals)
+
+
+def random_unitary(N):
+    if N == 1:
+        return np.array([np.exp(1j*random.random()*2*math.pi)])
+    return scipy.stats.unitary_group.rvs(N)
+
+
+def rotate(rho, phi):
+    rotmat = np.diag(np.exp(-1j*phi*np.arange(len(rho))))
+    return rotmat @ rho @ np.conj(rotmat)
+
+
+def displacement_matrix(m, n, alpha):
+    # return the value of <m|D(alpha)|n>
+    dmn = 0
+    for p in range(np.min([m, n])+1):
+        dmn = dmn + np.sqrt(float(math.factorial(m)*math.factorial(n)))*(-1)**(n-p)/(math.factorial(p)*math.factorial(m-p)*math.factorial(n-p))*alpha**(m-p)*np.conj(alpha)**(n-p)
+    dmn = np.exp(-(1/2)*np.abs(alpha)**2)*dmn
+    return dmn
+
+
