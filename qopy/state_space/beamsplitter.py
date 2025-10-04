@@ -62,9 +62,9 @@ def output_1m_mode1(rho1, rho2, eta=0.5):
             for i in range(n1):
                 for j in range(n2):
                     for k in range(n1):
-                        l = i+j-m+r-k
-                        if 0 <= l <= (n2-1):
-                            rmr = rmr + rho1[i][k] * rho2[j][l] * transition_amplitude(i, j, m, eta) * transition_amplitude(k, l, r, eta)
+                        v = i+j-m+r-k
+                        if 0 <= v <= (n2-1):
+                            rmr = rmr + rho1[i][k] * rho2[j][v] * transition_amplitude(i, j, m, eta) * transition_amplitude(k, v, r, eta)
             rho[m][r] = rmr
     return rho
 
@@ -82,10 +82,10 @@ def output_1m_mode2(rho1, rho2, eta=0.5):
             for i in range(n1):
                 for j in range(n2):
                     for k in range(n1):
-                        l = i+j-n+s-k
-                        if 0 <= l <= (n2-1):
+                        v = i+j-n+s-k
+                        if 0 <= v <= (n2-1):
                             t = i+j-n
-                            rns = rns + rho1[i][k] * rho2[j][l] * transition_amplitude(i, j, t, eta) * transition_amplitude(k, l, t, eta)
+                            rns = rns + rho1[i][k] * rho2[j][v] * transition_amplitude(i, j, t, eta) * transition_amplitude(k, v, t, eta)
             rho[n][s] = rns
     return rho
 
@@ -107,10 +107,10 @@ def output_2m_ket(ket_p, ket_q, eta=0.5):
                     for i in range(n_phot_p + 1):
                         for k in range(n_phot_p + 1):
                             j = n + m - i
-                            l = r + s - k
-                            if (0 <= j <= n_phot_q) and (0 <= l <= n_phot_q):
-                                rho_nmrs += ket_p[i] * ket_q[j] * np.conj(ket_p[k]) * np.conj(ket_q[l]) * \
-                                            transition_amplitude(i, j, n, eta) * transition_amplitude(k, l, r, eta)
+                            v = r + s - k
+                            if (0 <= j <= n_phot_q) and (0 <= v <= n_phot_q):
+                                rho_nmrs += ket_p[i] * ket_q[j] * np.conj(ket_p[k]) * np.conj(ket_q[v]) * \
+                                            transition_amplitude(i, j, n, eta) * transition_amplitude(k, v, r, eta)
                     rho[n][m][r][s] = rho_nmrs
     return rho
 
