@@ -12,7 +12,7 @@ def direct(rho, rl, nr, isherm=True):
             rij = rho[i, j]
             if rij == 0:
                 continue
-            wij = xwig.fock.grid(i, j, rl, nr)
+            wij = xwig.fock(i, j, rl, nr)
             if isherm:
                 if i != j:
                     w += 2*np.real(rij * wij)

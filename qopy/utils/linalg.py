@@ -2,6 +2,18 @@ import numpy as np
 import scipy
 import operator
 
+def square_trim(M, tol=0):
+    M = np.asarray(M)
+    while M.shape[0] > 1:
+        last = M.shape[0] - 1
+        row = np.abs(M[last, :])
+        col = np.abs(M[:, last])
+        if np.all(row <= tol) and np.all(col <= tol):
+            M = M[:last, :last]
+        else:
+            break
+    return M
+
 
 def convolve_matrix(M1, M2):
     Mout = scipy.signal.convolve2d(M1, M2, mode='full')

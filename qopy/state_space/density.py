@@ -2,7 +2,7 @@ import numpy as np
 import math
 import scipy
 import random
-from state_space.beamsplitter import transition_amplitude
+from qopy.state_space.beamsplitter import transition_amplitude
 
 
 def rotate(rho, phi):
