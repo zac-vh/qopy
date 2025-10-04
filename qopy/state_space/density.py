@@ -71,5 +71,3 @@ def displacement_matrix(m, n, alpha):
         dmn = dmn + np.sqrt(float(math.factorial(m)*math.factorial(n)))*(-1)**(n-p)/(math.factorial(p)*math.factorial(m-p)*math.factorial(n-p))*alpha**(m-p)*np.conj(alpha)**(n-p)
     dmn = np.exp(-(1/2)*np.abs(alpha)**2)*dmn
     return dmn
-
-
