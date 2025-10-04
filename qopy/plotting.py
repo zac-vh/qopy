@@ -146,7 +146,6 @@ def plot_lines(wlist, rl=None, titles=None, levels=20, colors='black', linewidth
     for i, w in enumerate(wlist):
         ax = axs[i]
         w_real = np.real(w)
-        vmax = np.max(np.abs(w_real))
 
         ax.contour(mx, mp, w_real, levels=levels, colors=colors, linewidths=linewidths)
 
