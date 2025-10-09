@@ -1,5 +1,4 @@
 import numpy as np
-import math
 
 def square(rl, nr):
     x = np.linspace(-rl / 2, rl / 2, nr)
@@ -8,7 +7,14 @@ def square(rl, nr):
 
 
 def sphere(n_theta, n_phi):
-    th = np.linspace(0, math.pi, n_theta)
-    ph = np.linspace(0, 2*math.pi, n_phi)
+    th = np.linspace(0, np.pi, n_theta)
+    ph = np.linspace(0, 2*np.pi, n_phi)
     mth, mph = np.meshgrid(th, ph, indexing='ij')
     return mth, mph
+
+
+def rectangle(xmin, xmax, ymin, ymax, nx, ny):
+    x = np.linspace(xmin, xmax, nx)
+    y = np.linspace(ymin, ymax, ny)
+    mx, my = np.meshgrid(x, y, indexing='ij')
+    return mx, my
