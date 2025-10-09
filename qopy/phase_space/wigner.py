@@ -1,6 +1,6 @@
 import numpy as np
 import qopy.phase_space.cross_wigner as xwig
-from qopy.utils.grid import grid_square
+from qopy.utils.grid import square
 import mpmath
 import scipy
 
@@ -42,7 +42,7 @@ def from_psi(psi, rl, nr):
 def gkp(s, rl, nr):
     # Compute the Wigner function of the finite-energy GKP
     # sigma should be taken in the range 0.3-1
-    mx, mp = grid_square(rl, nr)
+    mx, mp = square(rl, nr)
     jtheta = np.vectorize(mpmath.jtheta, 'D')
     C = jtheta(3, 0, np.exp(-4 * np.pi * s ** 2)) * jtheta(3, 0, np.exp(-4 * np.pi * ((s ** 4 + 1) / s ** 2))) \
         + jtheta(2, 0, np.exp(-4 * np.pi * s ** 2)) * jtheta(2, 0, np.exp(-4 * np.pi * ((s ** 4 + 1) / s ** 2)))
@@ -62,7 +62,7 @@ def gkp(s, rl, nr):
 
 
 def particle_in_a_box(a, rl, nr):
-    mx, mp = grid_square(rl, nr)
+    mx, mp = square(rl, nr)
     mxa = mx[np.abs(mx) < a/2]
     mpa = mp[np.abs(mx) < a/2]
     w = np.zeros([nr, nr])
@@ -76,7 +76,7 @@ def cubic_phase(gamma, rl, nr, disp=(0, 0), sq=1):
     # See https://doi.org/10.1103/PhysRevA.100.013831
     if gamma == 0:
         return fock(0, rl, nr)
-    mx, mp = grid_square(rl, nr)
+    mx, mp = square(rl, nr)
     mx = (mx-disp[0])/sq
     mp = (mp-disp[1])*sq
     mgamma = np.exp(1/(54*gamma**2))*(4/(3*np.abs(gamma)))**(1/3)/np.sqrt(np.pi)

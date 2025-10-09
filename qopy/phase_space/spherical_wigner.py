@@ -3,7 +3,7 @@ import scipy
 import math
 from qutip import clebsch
 import matplotlib.pyplot as plt
-from qopy.utils.grid import grid_sphere as grid
+from qopy.utils.grid import sphere as grid
 
 # Spherical Wigner functions for qudits
 def spherical_harmonic_theta_phi(l, m, theta, phi):

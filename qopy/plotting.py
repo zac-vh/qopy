@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from qopy.utils.grid import grid_square as grid
+from qopy.utils.grid import square as grid
 from matplotlib.widgets import Slider
 from qopy.phase_space.measures import marginal
 

@@ -1,5 +1,5 @@
 import numpy as np
-from qopy.utils.grid import grid_square
+from qopy.utils.grid import square
 import scipy
 import qopy.utils.polynomials as poly
 
@@ -12,7 +12,7 @@ def coherent_xp(alpha, beta, x, p):
     return (1/np.pi)*np.exp(exp)
 
 def coherent(alpha, beta, rl, nr):
-    mx, mp = grid_square(rl, nr)
+    mx, mp = square(rl, nr)
     wij = coherent_xp(alpha, beta, mx, mp)
     return wij
 
@@ -31,7 +31,7 @@ def displaced_fock_xp(m, n, alpha, beta, x, p):
 
 def displaced_fock(m, n, alpha, beta, rl, nr):
     # Return the Wigner function of the operator D(alpha)|m><n|D(-beta)
-    mx, mp = grid_square(rl, nr)
+    mx, mp = square(rl, nr)
     wij = displaced_fock_xp(m, n, alpha, beta, mx, mp)
     return wij
 
@@ -59,7 +59,7 @@ def fock_xp(i, j, x, p):
 
 
 def fock(i, j, rl, nr):
-    mx, mp = grid_square(rl, nr)
+    mx, mp = square(rl, nr)
     wij = fock_xp(i, j, mx, mp)
     return wij
 
@@ -116,7 +116,7 @@ def gaussian_xp(alpha1, alpha2, xi1, xi2, x, p):
 
 
 def gaussian(alpha1, alpha2, xi1, xi2, rl, nr):
-    mx, mp = grid_square(rl, nr)
+    mx, mp = square(rl, nr)
     wij = gaussian_xp(alpha1, alpha2, xi1, xi2, mx, mp)
     return wij
 
@@ -164,5 +164,5 @@ def gaussian_fock_xp(alpha1, alpha2, xi1, xi2, n1, n2, x, p):
 
 
 def gaussian_fock(alpha1, alpha2, xi1, xi2, n1, n2, rl, nr):
-    mx, mp = grid_square(rl, nr)
+    mx, mp = square(rl, nr)
     return gaussian_fock_xp(alpha1, alpha2, xi1, xi2, n1, n2, mx, mp)

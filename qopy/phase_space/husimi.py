@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from qopy.utils.grid import grid_square as grid
+from qopy.utils.grid import square as grid
 
 
 def fock_cross_husimi(i, j, rl, nr, hbar=1):
