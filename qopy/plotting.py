@@ -6,8 +6,12 @@ from qopy.phase_space.measures import marginal
 
 
 def plot_2d(wlist, rl=None, titles=None, maxval=None, cmap='RdBu'):
-    if isinstance(wlist, np.ndarray) and wlist.ndim == 2:
-        wlist = [wlist]
+    if isinstance(wlist, np.ndarray):
+        if wlist.ndim == 2:
+            wlist = [wlist]
+        elif wlist.ndim == 3:
+            wlist = [wlist[:, :, i] for i in range(wlist.shape[2])]
+            
     N = len(wlist)
     nr = wlist[0].shape[0]
     if rl is None:
@@ -35,8 +39,11 @@ def plot_2d(wlist, rl=None, titles=None, maxval=None, cmap='RdBu'):
 
 
 def plot_3d(wlist, rl=None, titles=None, maxval=None, cmap='viridis', stride=None):
-    if isinstance(wlist, np.ndarray) and wlist.ndim == 2:
-        wlist = [wlist]
+    if isinstance(wlist, np.ndarray):
+        if wlist.ndim == 2:
+            wlist = [wlist]
+        elif wlist.ndim == 3:
+            wlist = [wlist[:, :, i] for i in range(wlist.shape[2])]
 
     N = len(wlist)
     nr = wlist[0].shape[0]
@@ -78,8 +85,11 @@ def plot_3d(wlist, rl=None, titles=None, maxval=None, cmap='viridis', stride=Non
 
 
 def plot_contour(wlist, rl=None, titles=None, levels=20, cmap='RdBu', linewidths=0.8):
-    if isinstance(wlist, np.ndarray) and wlist.ndim == 2:
-        wlist = [wlist]
+    if isinstance(wlist, np.ndarray):
+        if wlist.ndim == 2:
+            wlist = [wlist]
+        elif wlist.ndim == 3:
+            wlist = [wlist[:, :, i] for i in range(wlist.shape[2])]
 
     N = len(wlist)
     nr = wlist[0].shape[0]
@@ -130,8 +140,11 @@ def plot_lines(wlist, rl=None, titles=None, levels=20, colors='black', linewidth
     linewidths : float
         Thickness of the contour lines.
     """
-    if isinstance(wlist, np.ndarray) and wlist.ndim == 2:
-        wlist = [wlist]
+    if isinstance(wlist, np.ndarray):
+        if wlist.ndim == 2:
+            wlist = [wlist]
+        elif wlist.ndim == 3:
+            wlist = [wlist[:, :, i] for i in range(wlist.shape[2])]
 
     N = len(wlist)
     nr = wlist[0].shape[0]
@@ -178,8 +191,11 @@ def plot_zero_contour(wlist, rl=None, titles=None, color='black', linewidth=1.5,
     linestyle : str
         Style of the contour line ('solid', 'dashed', etc.).
     """
-    if isinstance(wlist, np.ndarray) and wlist.ndim == 2:
-        wlist = [wlist]
+    if isinstance(wlist, np.ndarray):
+        if wlist.ndim == 2:
+            wlist = [wlist]
+        elif wlist.ndim == 3:
+            wlist = [wlist[:, :, i] for i in range(wlist.shape[2])]
 
     N = len(wlist)
     nr = wlist[0].shape[0]
