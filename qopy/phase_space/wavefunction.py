@@ -95,3 +95,33 @@ def psi_to_ket(psi, xl, N):
 
 def psi_to_wig(psi, rl, nr):
     return np.real(xwig.from_psi(psi, psi, rl, nr))
+
+
+def gkp(xl, Delta, kappa, mu=0, n_sigma=5):
+    xl = np.asarray(xl, dtype=float)
+    psi = np.zeros_like(xl, dtype=complex)
+
+    L = np.max(np.abs(xl))
+    s_max = int(np.ceil((L + n_sigma * Delta) / (2 * np.sqrt(np.pi))))
+
+    for s in range(-s_max, s_max + 1):
+        center = (2 * s + mu) * np.sqrt(np.pi)
+        peak = np.exp(-(xl - center)**2 / (2 * Delta**2))
+        envelope = np.exp(-2 * np.pi * (kappa**2) * s**2)
+        psi += envelope * peak
+
+    return normalize(psi, xl)
+
+
+def fourier(fx, xl, inverse=False):
+    fx = np.asarray(fx, dtype=complex)
+    xl = np.asarray(xl, dtype=float)
+
+    dx = xl[1] - xl[0]
+
+    sign = +1 if inverse else -1
+    phase = np.exp(1j * sign * np.outer(xl, xl))
+
+    f_out = dx / np.sqrt(2 * np.pi) * phase @ fx
+
+    return f_out

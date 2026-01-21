@@ -39,7 +39,7 @@ def from_psi(psi, rl, nr):
     return np.real(xwig.from_psi(psi, psi, rl, nr))
 
 
-def gkp(s, rl, nr):
+def gkp_analytic(s, rl, nr):
     # Compute the Wigner function of the finite-energy GKP
     # sigma should be taken in the range 0.3-1
     mx, mp = square(rl, nr)
