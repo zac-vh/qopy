@@ -53,3 +53,10 @@ def renyi_entropy_vector(vec, alpha):
 def renyi_entropy_matrix(rho, alpha):
     la = matrix_eigenvalues(rho)
     return renyi_entropy_vector(la, alpha)
+
+
+def rotation_matrix(theta):
+    c = np.cos(theta)
+    s = np.sin(theta)
+    return np.array([[c, -s],
+                     [s,  c]])

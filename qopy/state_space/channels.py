@@ -1,31 +1,31 @@
 import numpy as np
 import math
 
-def vertigo(rho, s, normalized=False):
-    if s == 1:
+def vertigo(rho, t, normalized=True):
+    if t == 1:
         return rho
     N = len(rho)
     rout = np.zeros([N, N], dtype=complex)
     for m in range(N):
         for k in range(m+1):
-            ammk = ((s - 1) ** m
+            ammk = ((t - 1) ** m
                    * (math.factorial(m) / (math.factorial(k) * math.factorial(m - k)))
-                   * (s / (s - 1)) ** k
+                   * (t / (t - 1)) ** k
                    )
             rout[k, k] = rout[k, k] + rho[m, m] * ammk
         for n in range(m+1, N):
             for k in range(m+1):
-                amnk = (np.sqrt(s)**(n-m)
-                      *(s-1)**m
+                amnk = (np.sqrt(t)**(n-m)
+                      *(t-1)**m
                       *np.sqrt(math.factorial(m)/math.factorial(n))
                       *(math.factorial(n)/(math.factorial(k)*math.factorial(n-k)))
-                      *(s/(s-1))**(m-k)
+                      *(t/(t-1))**(m-k)
                       *np.sqrt(math.factorial(n-k)/math.factorial(m-k))
                       )
                 rout[m - k, n - k] = rout[m - k, n - k] + rho[m, n] * amnk
                 rout[n - k, m - k] = rout[n - k, m - k] + rho[n, m] * amnk
     if normalized:
-        rout = rout/np.sum(np.diag(rho)*(2*s-1)**(np.arange(N)))
+        rout = rout/np.sum(np.diag(rho)*(2*t-1)**(np.arange(N)))
     return rout
 
 
