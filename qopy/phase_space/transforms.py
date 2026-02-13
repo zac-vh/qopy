@@ -128,19 +128,26 @@ def minimize_energy_with_symplectic(w, rl):
 
 
 def gradient(w, rl):
-    nr = len(w)
-    return np.gradient(w, rl / (nr - 1), edge_order=2)
+    nr = w.shape[0]
+    h = rl / (nr - 1)
+    return np.gradient(w, h, edge_order=2)
 
 
 def laplacian(w, rl, power=1):
     if power == 0:
         return w
-    nr = len(w)
-    gw = gradient(w, rl)
-    gwxx = gradient(gw[0], rl)[0]
-    gwpp = gradient(gw[1], rl)[1]
-    wout = gwxx + gwpp
-    return laplacian(wout, rl, power-1)
+
+    nr = w.shape[0]
+    h = rl / (nr - 1)
+
+    wout = w
+    for _ in range(power):
+        wx, wp = np.gradient(wout, h, edge_order=2)
+        wxx, _ = np.gradient(wx, h, edge_order=2)
+        _, wpp = np.gradient(wp, h, edge_order=2)
+        wout = wxx + wpp
+
+    return wout
 
 
 def average_negative_volume(w, rl):
