@@ -1,23 +1,49 @@
 import numpy as np
-import scipy
-
-def wigner_tensor(w1, w2):
-    # use the convention to use order W(x_1,p_1,x_2,p_2)=W(x_1,p_1)W(x_2,p_2)
-    return np.tensordot(w1, w2, axes=0)
+from scipy.integrate import simpson
 
 
-def wigner_integrate_2mode(W, rl):
-    # Integrate the 2-mode Wigner function
-    nr = len(W)
-    x = np.linspace(-rl / 2, rl / 2, nr)
-    return scipy.integrate.simpson(scipy.integrate.simpson(scipy.integrate.simpson(scipy.integrate.simpson(W, x), x=x), x=x), x=x)
+def tensor(w1, w2):
+    """
+    Construct two-mode separable Wigner function:
+    W(x1,p1,x2,p2) = W1(x1,p1) * W2(x2,p2)
+    """
+    return np.multiply.outer(w1, w2)
 
 
-def wigner_partial_trace(W, rl, mode=2):
-    nr = len(W)
-    x = np.linspace(-rl/2, rl/2, nr)
-    if mode==2:
-        w = scipy.integrate.simpson(scipy.integrate.simpson(W, x=x), x=x)
-    if mode==1:
-        w = scipy.integrate.simpson(scipy.integrate.simpson(W, x=x, axis=0), x=x, axis=0)
-    return w
+def integrate_2mode(W, rl):
+    """
+    Integrate a 4D two-mode Wigner function over all variables.
+    """
+    nr = W.shape[0]
+    dx = rl / (nr - 1)
+
+    # Successively integrate over each axis
+    result = W
+    for axis in reversed(range(W.ndim)):
+        result = simpson(result, dx=dx, axis=axis)
+
+    return result
+
+
+def partial_trace(W, rl, mode=2):
+    """
+    Partial trace over one mode of a two-mode Wigner function.
+    
+    mode=2 → trace out (x2,p2)
+    mode=1 → trace out (x1,p1)
+    """
+    nr = W.shape[0]
+    dx = rl / (nr - 1)
+
+    if mode == 2:
+        # integrate over last two axes
+        result = simpson(W, dx=dx, axis=3)
+        result = simpson(result, dx=dx, axis=2)
+    elif mode == 1:
+        # integrate over first two axes
+        result = simpson(W, dx=dx, axis=1)
+        result = simpson(result, dx=dx, axis=0)
+    else:
+        raise ValueError("mode must be 1 or 2")
+
+    return result
