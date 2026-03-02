@@ -8,6 +8,8 @@ import numpy as np
 import scipy
 from qopy.phase_space import measures
 from qopy.phase_space.wigner import fock
+from qopy.phase_space.wigner import gaussian_via_covariance_matrix
+from scipy.ndimage import gaussian_filter
 
 
 def get_rl_fft(nr):
@@ -136,17 +138,14 @@ def gradient(w, rl):
 def laplacian(w, rl, power=1):
     if power == 0:
         return w
-
     nr = w.shape[0]
     h = rl / (nr - 1)
-
     wout = w
     for _ in range(power):
         wx, wp = np.gradient(wout, h, edge_order=2)
         wxx, _ = np.gradient(wx, h, edge_order=2)
         _, wpp = np.gradient(wp, h, edge_order=2)
         wout = wxx + wpp
-
     return wout
 
 
@@ -200,3 +199,10 @@ def pure_loss(w, rl, eta):
     nr = len(w)
     w0 = fock(0, rl, nr)
     return beam_splitter_mixing(w, w0, rl, eta)
+
+def gaussian_noise(w, rl, cov):
+    nr = len(w)
+    if np.isscalar(cov):
+        cov = cov * np.eye(2)
+    g = gaussian_via_covariance_matrix(rl, nr, 0, cov)
+    return convolve(w, g, rl)
