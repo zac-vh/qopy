@@ -77,7 +77,6 @@ def energy(w, rl):
 def shannon_entropy_2d(w, rl):
     # Compute the Wigner(Rényi) entropy of the Wigner function
     nr = len(w)
-    x = np.linspace(-rl / 2, rl / 2, nr)
     wlog = np.zeros([nr, nr])
     wlog[np.nonzero(w)] = np.log(np.abs(w[np.nonzero(w)]))
     return - integrate_2d(w * wlog, rl)
