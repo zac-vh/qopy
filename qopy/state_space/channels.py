@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import qopy.state_space.transitions
 
 def vertigo(rho, t, normalized=True):
     if t == 1:
@@ -48,4 +49,28 @@ def pure_loss_channel(rho, eta):
         rout += ((1 - eta) ** k / math.factorial(k)) * Dk
         Ak = Ak @ A
         Adagk = Adagk @ Adag
+    return rout
+
+
+def rescaling_map(rho, s, Nout=None):
+    if Nout is None:
+        Nout = len(rho)
+    
+    if s == 1 and Nout == len(rho):
+        return rho.copy()
+    
+    N = len(rho)
+    rout = np.zeros((Nout, Nout), dtype=complex)
+    
+    for m in range(N):
+        for n in range(N):
+            if rho[m, n] == 0:
+                continue
+            for q in range(Nout):
+                r = q - (n - m)
+                if r < 0 or r >= Nout:
+                    continue
+                amp = qopy.state_space.transitions.rescaling_map(m, n, q, r, s)
+                rout[r, q] += amp * rho[m, n]
+    
     return rout
