@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import qopy.state_space.transitions
+from scipy.special import comb
 
 def vertigo(rho, t, normalized=True):
     if t == 1:
@@ -32,27 +33,54 @@ def vertigo(rho, t, normalized=True):
 
 def pure_loss_channel(rho, eta):
     N = len(rho)
-    if eta == 1:
-        return rho
+    if eta == 1: return rho
     if eta == 0:
-        r0 = np.zeros([N, N], dtype=complex)
-        r0[0, 0] = 1
+        r0 = np.zeros_like(rho)
+        r0[0, 0] = 1.0
         return r0
-    rout = np.zeros([N, N], dtype=complex)
-    A = np.diag(np.sqrt(np.arange(1, N)), 1)
-    Adag = np.diag(np.sqrt(np.arange(1, N)), -1)
-    Neta = np.diag(np.sqrt(eta)**np.arange(N))
-    Ak = np.eye(N)
-    Adagk = np.eye(N)
+    rout = np.zeros_like(rho)
+    n_indices = np.arange(N)
+    eta_factors = np.sqrt(eta)**(n_indices[:, None] + n_indices[None, :])
     for k in range(N):
-        Dk = Neta @ Ak @ rho @ Adagk @ Neta
-        rout += ((1 - eta) ** k / math.factorial(k)) * Dk
-        Ak = Ak @ A
-        Adagk = Adagk @ Adag
+        m = n_indices[:N-k]
+        c_k = np.sqrt(comb(m + k, k))
+        coeffs_k = (1 - eta)**k * np.outer(c_k, c_k)
+        rout[:N-k, :N-k] += coeffs_k * rho[k:, k:]   
+    return rout * eta_factors
+
+
+def quantum_amplifier_channel(rho, g, N_out=None):
+    N_in = rho.shape[0]
+    if N_out is None:
+        N_out = N_in
+    if g == 1:
+        res = np.zeros((N_out, N_out), dtype=complex)
+        m = min(N_in, N_out)
+        res[:m, :m] = rho[:m, :m]
+        return res
+    rout = np.zeros((N_out, N_out), dtype=complex)
+    n_in = np.arange(N_in)
+    g_diag = g**(-n_in / 2.0)
+    rho_scaled = rho * np.outer(g_diag, g_diag)
+    for l in range(N_out):
+        size = min(N_in, N_out - l)
+        if size <= 0:
+            break
+        indices_i = np.arange(l, l + size)
+        c_l = np.sqrt(comb(indices_i, l))
+        coeffs_l = ((g - 1)**l / g**(l + 1)) * np.outer(c_l, c_l)
+        rout[l:l+size, l:l+size] += coeffs_l * rho_scaled[:size, :size]
     return rout
 
 
-def rescaling_map(rho, s, Nout=None):
+def rescaling_map(rho, s, N_out):
+    eta = 2*s**2/(s**2+1)
+    gain = (s**2+1)/2
+    rho_plc = pure_loss_channel(rho, eta)
+    return quantum_amplifier_channel(rho_plc, gain, N_out)
+
+
+def rescaling_map_old(rho, s, Nout=None):
     if Nout is None:
         Nout = len(rho)
     
