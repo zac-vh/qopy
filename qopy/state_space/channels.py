@@ -78,27 +78,3 @@ def rescaling_map(rho, s, N_out):
     gain = (s**2+1)/2
     rho_plc = pure_loss_channel(rho, eta)
     return quantum_amplifier_channel(rho_plc, gain, N_out)
-
-
-def rescaling_map_old(rho, s, Nout=None):
-    if Nout is None:
-        Nout = len(rho)
-    
-    if s == 1 and Nout == len(rho):
-        return rho.copy()
-    
-    N = len(rho)
-    rout = np.zeros((Nout, Nout), dtype=complex)
-    
-    for m in range(N):
-        for n in range(N):
-            if rho[m, n] == 0:
-                continue
-            for q in range(Nout):
-                r = q - (n - m)
-                if r < 0 or r >= Nout:
-                    continue
-                amp = qopy.state_space.transitions.rescaling_map(m, n, q, r, s)
-                rout[r, q] += amp * rho[m, n]
-    
-    return rout
