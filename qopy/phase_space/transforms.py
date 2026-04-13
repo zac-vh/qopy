@@ -10,7 +10,7 @@ from qopy.phase_space import measures
 from qopy.phase_space.wigner import fock
 from qopy.phase_space.wigner import gaussian_via_covariance_matrix
 from scipy.ndimage import gaussian_filter
-
+import scipy.ndimage as nd
 
 def get_rl_fft(nr):
     return np.sqrt(2 * np.pi / nr) * (nr - 1)
@@ -135,7 +135,7 @@ def gradient(w, rl):
     return np.gradient(w, h, edge_order=2)
 
 
-def laplacian(w, rl, power=1):
+def laplacian_old(w, rl, power=1):
     if power == 0:
         return w
     nr = w.shape[0]
@@ -147,6 +147,30 @@ def laplacian(w, rl, power=1):
         _, wpp = np.gradient(wp, h, edge_order=2)
         wout = wxx + wpp
     return wout
+
+
+def laplacian(w, rl, power=1):
+    if power == 0:
+        return w
+    
+    nr = w.shape[0]
+    h = rl / (nr - 1)
+    
+    wout = w.copy()
+    for _ in range(power):
+        wout = nd.laplace(wout) / (h**2)
+        
+    return wout
+
+
+def laplacian_fft(f, rl, power=1):
+    nr = f.shape[0]
+    L = 2 * rl
+    kx = np.fft.fftfreq(nr, d=L/nr) * 2 * np.pi
+    KX, KY = np.meshgrid(kx, kx)
+    K2 = KX**2 + KY**2
+    fhat = np.fft.fft2(f)
+    return np.real(np.fft.ifft2((-K2)**power * fhat))
 
 
 def average_negative_volume(w, rl):
