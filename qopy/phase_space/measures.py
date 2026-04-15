@@ -67,6 +67,7 @@ def negative_volume(w, rl):
 def purity(w, rl):
     return 2*math.pi*integrate_2d(w**2, rl)
 
+
 def energy(w, rl):
     nr = len(w)
     x = np.linspace(-rl / 2, rl / 2, nr)

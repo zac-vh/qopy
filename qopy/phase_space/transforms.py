@@ -209,11 +209,42 @@ def beam_splitter_mixing(w1, w2, rl, eta):
     return convolve(w1_resc, w2_resc, rl)
 
 
+def beam_splitter_mixing_theta(w1, w2, rl, theta):
+    cos_t = np.cos(theta)
+    sin_t = np.sin(theta)
+
+    if sin_t == 0:
+        return np.flip(w1) if cos_t < 0 else w1
+    if cos_t == 0:
+        return np.flip(w2) if sin_t < 0 else w2
+
+    _w1 = np.flip(w1) if cos_t < 0 else w1
+    _w2 = np.flip(w2) if sin_t < 0 else w2
+
+    w1_resc = rescale(_w1, abs(cos_t))
+    w2_resc = rescale(_w2, abs(sin_t))
+
+    return convolve(w1_resc, w2_resc, rl)
+
+
 def two_mode_squeezer_mixing(w1, w2, rl, g):
     if g == 1:
         return w1
     w1_resc = rescale(w1, np.sqrt(g))
     w2_resc = rescale(np.flip(w2, axis=1), np.sqrt(g-1))
+    return convolve(w1_resc, w2_resc, rl)
+
+
+def two_mode_squeezer_mixing_r(w1, w2, rl, r):
+    if r == 0:
+        return w1
+    cosh_r = np.cosh(r)
+    sinh_r = np.sinh(r)
+
+    w2_flipped = np.flip(w2, axis=0) if sinh_r < 0 else np.flip(w2, axis=1)
+    
+    w1_resc = rescale(w1, cosh_r)
+    w2_resc = rescale(w2_flipped, abs(sinh_r))
     return convolve(w1_resc, w2_resc, rl)
 
 
