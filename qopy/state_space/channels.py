@@ -1,6 +1,5 @@
 import numpy as np
 import math
-import qopy.state_space.transitions
 from scipy.special import comb
 
 def vertigo(rho, t, normalized=True):
@@ -33,10 +32,11 @@ def vertigo(rho, t, normalized=True):
 
 def pure_loss_channel(rho, eta):
     N = len(rho)
-    if eta == 1: return rho
+    if eta == 1: 
+        return rho
     if eta == 0:
         r0 = np.zeros_like(rho)
-        r0[0, 0] = 1.0
+        r0[0, 0] = np.trace(rho)
         return r0
     rout = np.zeros_like(rho)
     n_indices = np.arange(N)
@@ -78,3 +78,14 @@ def rescaling_map(rho, s, N_out):
     gain = (s**2+1)/2
     rho_plc = pure_loss_channel(rho, eta)
     return quantum_amplifier_channel(rho_plc, gain, N_out)
+
+
+def narcowich_spectrum(rho, eta_values, N_max):
+    min_eigenvalues = []
+
+    for eta in eta_values:
+        s = 1 / np.sqrt(eta)
+        rho_rescaled = rescaling_map(rho, s, N_max)
+        min_eigenvalues.append(np.linalg.eigvalsh(rho_rescaled)[0])
+
+    return np.array(min_eigenvalues)
