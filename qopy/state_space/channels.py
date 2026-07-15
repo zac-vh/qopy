@@ -68,7 +68,7 @@ def quantum_amplifier_channel(rho, g, N_out=None):
             break
         indices_i = np.arange(l, l + size)
         c_l = np.sqrt(comb(indices_i, l))
-        coeffs_l = ((g - 1)**l / g**(l + 1)) * np.outer(c_l, c_l)
+        coeffs_l = ((g - 1) / g)**l / g * np.outer(c_l, c_l)
         rout[l:l+size, l:l+size] += coeffs_l * rho_scaled[:size, :size]
     return rout
 
